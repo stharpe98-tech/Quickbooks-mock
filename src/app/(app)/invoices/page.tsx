@@ -1,18 +1,24 @@
 import Link from "next/link";
 import { format } from "date-fns";
-import { FileText, Plus, FilePlus2 } from "lucide-react";
+import { FileText, Plus, FilePlus2, SearchX } from "lucide-react";
 import { listInvoices } from "@/lib/db/invoices";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SearchBar } from "@/components/ui/SearchBar";
 import { Table, THead, TBody, TR, TH, TD, EmptyState } from "@/components/ui/Table";
 import { StatusBadge } from "@/components/ui/Badge";
 import { accents } from "@/lib/theme";
 
 export const dynamic = "force-dynamic";
 
-export default async function InvoicesPage() {
-  const invoices = await listInvoices();
+export default async function InvoicesPage({
+  searchParams,
+}: {
+  searchParams: { q?: string };
+}) {
+  const query = searchParams.q?.trim() ?? "";
+  const invoices = await listInvoices(query);
 
   return (
     <>
@@ -31,13 +37,23 @@ export default async function InvoicesPage() {
         }
       />
 
+      <SearchBar placeholder="Search by customer, status, or notes…" />
+
       {invoices.length === 0 ? (
-        <EmptyState
-          title="No invoices yet."
-          hint="Create your first invoice to start tracking income."
-          icon={FilePlus2}
-          gradient={accents.invoices.gradient}
-        />
+        query ? (
+          <EmptyState
+            title={`No invoices match "${query}".`}
+            hint="Try a different search term."
+            icon={SearchX}
+          />
+        ) : (
+          <EmptyState
+            title="No invoices yet."
+            hint="Create your first invoice to start tracking income."
+            icon={FilePlus2}
+            gradient={accents.invoices.gradient}
+          />
+        )
       ) : (
         <Table>
           <THead>

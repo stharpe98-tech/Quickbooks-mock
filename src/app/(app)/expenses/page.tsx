@@ -1,18 +1,24 @@
 import Link from "next/link";
 import { format } from "date-fns";
-import { Plus, Receipt, ReceiptText } from "lucide-react";
+import { Plus, Receipt, ReceiptText, SearchX } from "lucide-react";
 import { listExpenses } from "@/lib/db/expenses";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SearchBar } from "@/components/ui/SearchBar";
 import { Table, THead, TBody, TR, TH, TD, EmptyState } from "@/components/ui/Table";
 import { accents } from "@/lib/theme";
 import { DeleteExpenseButton } from "./DeleteExpenseButton";
 
 export const dynamic = "force-dynamic";
 
-export default async function ExpensesPage() {
-  const expenses = await listExpenses();
+export default async function ExpensesPage({
+  searchParams,
+}: {
+  searchParams: { q?: string };
+}) {
+  const query = searchParams.q?.trim() ?? "";
+  const expenses = await listExpenses(query);
   const total = expenses.reduce((sum, e) => sum + e.amount_cents, 0);
 
   return (
@@ -32,13 +38,23 @@ export default async function ExpensesPage() {
         }
       />
 
+      <SearchBar placeholder="Search by vendor, category, or notes…" />
+
       {expenses.length === 0 ? (
-        <EmptyState
-          title="No expenses logged yet."
-          hint="Track money going out to see your net."
-          icon={ReceiptText}
-          gradient={accents.expenses.gradient}
-        />
+        query ? (
+          <EmptyState
+            title={`No expenses match "${query}".`}
+            hint="Try a different search term."
+            icon={SearchX}
+          />
+        ) : (
+          <EmptyState
+            title="No expenses logged yet."
+            hint="Track money going out to see your net."
+            icon={ReceiptText}
+            gradient={accents.expenses.gradient}
+          />
+        )
       ) : (
         <Table>
           <THead>

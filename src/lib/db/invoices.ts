@@ -7,12 +7,30 @@ import type {
   InvoiceWithDetails,
 } from "./types";
 
-export async function listInvoices(): Promise<InvoiceWithCustomer[]> {
+export async function listInvoices(query?: string): Promise<InvoiceWithCustomer[]> {
   const supabase = createClient();
-  const { data, error } = await supabase
+  let q = supabase
     .from("invoices")
     .select("*, customer:customers(id, name)")
     .order("created_at", { ascending: false });
+
+  const trimmed = query?.trim();
+  if (trimmed) {
+    const escaped = trimmed.replace(/[(),]/g, " ");
+    // Find any customer whose name matches, then accept invoices whose customer is one of
+    // those OR whose notes/status text matches directly.
+    const { data: matchingCustomers } = await supabase
+      .from("customers")
+      .select("id")
+      .ilike("name", `%${escaped}%`);
+    const idList = (matchingCustomers ?? []).map((c) => c.id);
+
+    const orParts = [`notes.ilike.%${escaped}%`, `status.ilike.%${escaped}%`];
+    if (idList.length > 0) orParts.push(`customer_id.in.(${idList.join(",")})`);
+    q = q.or(orParts.join(","));
+  }
+
+  const { data, error } = await q;
   if (error) throw error;
   return (data ?? []) as InvoiceWithCustomer[];
 }

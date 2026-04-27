@@ -1,15 +1,21 @@
 import Link from "next/link";
-import { Mail, Phone, Plus, UserPlus, Users } from "lucide-react";
+import { Mail, Phone, Plus, SearchX, UserPlus, Users } from "lucide-react";
 import { listCustomers } from "@/lib/db/customers";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
+import { SearchBar } from "@/components/ui/SearchBar";
 import { Table, THead, TBody, TR, TH, TD, EmptyState } from "@/components/ui/Table";
 import { accents } from "@/lib/theme";
 
 export const dynamic = "force-dynamic";
 
-export default async function CustomersPage() {
-  const customers = await listCustomers();
+export default async function CustomersPage({
+  searchParams,
+}: {
+  searchParams: { q?: string };
+}) {
+  const query = searchParams.q?.trim() ?? "";
+  const customers = await listCustomers(query);
 
   return (
     <>
@@ -28,13 +34,23 @@ export default async function CustomersPage() {
         }
       />
 
+      <SearchBar placeholder="Search customers by name, email, or phone…" />
+
       {customers.length === 0 ? (
-        <EmptyState
-          title="No customers yet."
-          hint="Create your first customer to start invoicing."
-          icon={UserPlus}
-          gradient={accents.customers.gradient}
-        />
+        query ? (
+          <EmptyState
+            title={`No customers match "${query}".`}
+            hint="Try a different search term."
+            icon={SearchX}
+          />
+        ) : (
+          <EmptyState
+            title="No customers yet."
+            hint="Create your first customer to start invoicing."
+            icon={UserPlus}
+            gradient={accents.customers.gradient}
+          />
+        )
       ) : (
         <Table>
           <THead>

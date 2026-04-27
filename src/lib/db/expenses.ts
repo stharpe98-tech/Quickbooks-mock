@@ -1,13 +1,19 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Expense } from "./types";
 
-export async function listExpenses(): Promise<Expense[]> {
+export async function listExpenses(query?: string): Promise<Expense[]> {
   const supabase = createClient();
-  const { data, error } = await supabase
+  let q = supabase
     .from("expenses")
     .select("*")
     .order("expense_date", { ascending: false })
     .order("created_at", { ascending: false });
+  const trimmed = query?.trim();
+  if (trimmed) {
+    const escaped = trimmed.replace(/[(),]/g, " ");
+    q = q.or(`vendor.ilike.%${escaped}%,category.ilike.%${escaped}%,notes.ilike.%${escaped}%`);
+  }
+  const { data, error } = await q;
   if (error) throw error;
   return data ?? [];
 }

@@ -1,14 +1,23 @@
 import { createClient } from "@/lib/supabase/server";
 import type { Customer } from "./types";
 
-export async function listCustomers(): Promise<Customer[]> {
+export async function listCustomers(query?: string): Promise<Customer[]> {
   const supabase = createClient();
-  const { data, error } = await supabase
-    .from("customers")
-    .select("*")
-    .order("created_at", { ascending: false });
+  let q = supabase.from("customers").select("*").order("created_at", { ascending: false });
+  const trimmed = query?.trim();
+  if (trimmed) {
+    const escaped = escapeIlike(trimmed);
+    q = q.or(`name.ilike.%${escaped}%,email.ilike.%${escaped}%,phone.ilike.%${escaped}%`);
+  }
+  const { data, error } = await q;
   if (error) throw error;
   return data ?? [];
+}
+
+// Strip PostgREST `or()`-breaking chars from user input.
+// We allow normal text and just neutralise commas/parens which delimit filters.
+function escapeIlike(input: string): string {
+  return input.replace(/[(),]/g, " ");
 }
 
 export async function getCustomer(id: string): Promise<Customer | null> {
