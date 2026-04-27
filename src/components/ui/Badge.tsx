@@ -1,18 +1,29 @@
 import { clsx } from "clsx";
+import type { LucideIcon } from "lucide-react";
+import { CircleDashed, Send, CheckCircle2 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { InvoiceStatus } from "@/lib/db/types";
 
-const statusStyles: Record<InvoiceStatus, string> = {
-  draft: "bg-slate-100 text-slate-700",
-  sent: "bg-amber-100 text-amber-800",
-  paid: "bg-emerald-100 text-emerald-800",
+const statusStyles: Record<InvoiceStatus, { className: string; icon: LucideIcon }> = {
+  draft: {
+    className: "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200",
+    icon: CircleDashed,
+  },
+  sent: {
+    className: "bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-200",
+    icon: Send,
+  },
+  paid: {
+    className: "bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-200",
+    icon: CheckCircle2,
+  },
 };
 
 export function Badge({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <span
       className={clsx(
-        "inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium",
+        "inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-medium",
         className,
       )}
     >
@@ -22,5 +33,11 @@ export function Badge({ children, className }: { children: ReactNode; className?
 }
 
 export function StatusBadge({ status }: { status: InvoiceStatus }) {
-  return <Badge className={statusStyles[status]}>{status}</Badge>;
+  const { className, icon: Icon } = statusStyles[status];
+  return (
+    <Badge className={className}>
+      <Icon className="h-3 w-3" />
+      {status}
+    </Badge>
+  );
 }

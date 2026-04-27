@@ -1,4 +1,5 @@
 import { clsx } from "clsx";
+import type { LucideIcon } from "lucide-react";
 import type { HTMLAttributes, ReactNode, ThHTMLAttributes, TdHTMLAttributes } from "react";
 
 export function Table({
@@ -66,10 +67,31 @@ export function TD({
   );
 }
 
-export function EmptyState({ title, hint }: { title: string; hint?: string }) {
+export function EmptyState({
+  title,
+  hint,
+  icon: Icon,
+  gradient,
+}: {
+  title: string;
+  hint?: string;
+  icon?: LucideIcon;
+  /** Optional Tailwind gradient classes for the icon tile. */
+  gradient?: string;
+}) {
   return (
-    <div className="rounded-lg border border-dashed border-slate-300 bg-white p-8 text-center">
-      <p className="text-sm font-medium text-slate-700">{title}</p>
+    <div className="rounded-xl border-2 border-dashed border-slate-200 bg-white p-10 text-center">
+      {Icon && (
+        <span
+          className={clsx(
+            "mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl text-white shadow-sm",
+            gradient ?? "bg-gradient-to-br from-slate-400 to-slate-600",
+          )}
+        >
+          <Icon className="h-6 w-6" />
+        </span>
+      )}
+      <p className="text-base font-semibold text-slate-800">{title}</p>
       {hint && <p className="mt-1 text-sm text-slate-500">{hint}</p>}
     </div>
   );

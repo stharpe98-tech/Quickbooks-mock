@@ -54,10 +54,20 @@ Set in Vercel project settings + local `.env.local`:
 - **Always provide a Plan before writing code.**
 
 ## Design Direction
-- Clean, minimal, slightly boring (it's an accounting app — trust > flash).
+- Friendly, colorful, easy to navigate. Trust still matters, but the app
+  should feel inviting — not a tax-software gray box.
+- Each section has its own accent color, defined once in
+  `src/lib/theme.ts`:
+  - Dashboard → emerald
+  - Customers → sky
+  - Invoices  → violet
+  - Expenses  → amber
+- Brand gradient: `from-indigo-500 via-violet-500 to-fuchsia-500`. Used on
+  the brand mark and the login screen.
+- Icons everywhere via `lucide-react` — every nav item, page header, stat
+  card, and empty state gets a glyph.
 - Tailwind defaults for spacing (4px scale matches Tailwind's `1` = `0.25rem` = `4px`).
-- Tables for data-heavy views; cards for dashboard summaries.
-- Single accent color (pick during scaffolding).
+- Tables for data-heavy views; gradient stat cards for dashboard summaries.
 
 ## Project-Specific Rules
 - **No real financial advice / tax features.** This is a learning mockup.

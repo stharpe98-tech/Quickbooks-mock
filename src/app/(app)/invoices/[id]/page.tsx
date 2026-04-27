@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
+import { ArrowLeft, FileText } from "lucide-react";
 import { getInvoice } from "@/lib/db/invoices";
 import { formatMoney } from "@/lib/money";
 import { Card } from "@/components/ui/Card";
@@ -22,9 +23,14 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
       <PageHeader
         title={`Invoice · ${format(new Date(invoice.issue_date), "MMM d, yyyy")}`}
         description={invoice.customer?.name ?? "Customer removed"}
+        section="invoices"
+        icon={FileText}
         actions={
           <Link href="/invoices">
-            <Button variant="secondary">Back</Button>
+            <Button variant="secondary">
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
           </Link>
         }
       />
@@ -61,10 +67,12 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
             </TBody>
           </Table>
 
-          <div className="mt-4 flex justify-end">
-            <div className="text-right">
-              <p className="text-xs uppercase tracking-wide text-slate-500">Total</p>
-              <p className="text-2xl font-semibold tabular-nums text-slate-900">
+          <div className="mt-6 flex justify-end">
+            <div className="rounded-xl bg-gradient-to-br from-violet-500 to-fuchsia-600 px-6 py-4 text-white shadow-md">
+              <p className="text-xs font-semibold uppercase tracking-wide text-white/80">
+                Total
+              </p>
+              <p className="text-2xl font-bold tabular-nums sm:text-3xl">
                 {formatMoney(invoice.total_cents)}
               </p>
             </div>
@@ -92,7 +100,7 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
                   {invoice.customer ? (
                     <Link
                       href={`/customers/${invoice.customer.id}`}
-                      className="text-indigo-700 hover:underline"
+                      className="text-sky-700 hover:underline"
                     >
                       {invoice.customer.name}
                     </Link>

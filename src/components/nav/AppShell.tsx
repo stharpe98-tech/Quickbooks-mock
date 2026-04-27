@@ -2,7 +2,24 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { LogOut, Menu, Wallet, X } from "lucide-react";
 import { SidebarNav } from "./Sidebar";
+import { brandGradient, brandGradientText } from "@/lib/theme";
+
+function BrandMark() {
+  return (
+    <Link href="/dashboard" className="flex items-center gap-2.5">
+      <span
+        className={`flex h-9 w-9 items-center justify-center rounded-lg ${brandGradient} text-white shadow-md`}
+      >
+        <Wallet className="h-5 w-5" />
+      </span>
+      <span className={`text-lg font-bold tracking-tight ${brandGradientText}`}>
+        QuickBooks Mock
+      </span>
+    </Link>
+  );
+}
 
 export function AppShell({
   email,
@@ -17,19 +34,22 @@ export function AppShell({
   return (
     <div className="min-h-screen lg:flex">
       {/* Desktop sidebar */}
-      <aside className="hidden w-60 shrink-0 border-r border-slate-200 bg-white p-4 lg:flex lg:flex-col">
-        <Link href="/dashboard" className="mb-6 block px-3 py-1 text-lg font-semibold text-slate-900">
-          QuickBooks Mock
-        </Link>
+      <aside className="hidden w-64 shrink-0 flex-col border-r border-slate-200 bg-white p-4 lg:flex">
+        <div className="mb-6 px-2 pt-1">
+          <BrandMark />
+        </div>
         <SidebarNav />
-        <div className="mt-auto border-t border-slate-200 pt-4">
-          <p className="px-3 text-xs text-slate-500">Signed in as</p>
-          <p className="px-3 truncate text-sm text-slate-700">{email}</p>
-          <form action="/api/auth/signout" method="post" className="mt-2 px-1">
+        <div className="mt-auto space-y-1 border-t border-slate-200 pt-4">
+          <p className="px-3 text-xs font-medium uppercase tracking-wide text-slate-400">
+            Signed in
+          </p>
+          <p className="truncate px-3 text-sm text-slate-700">{email}</p>
+          <form action="/api/auth/signout" method="post" className="pt-2">
             <button
               type="submit"
-              className="w-full rounded-md px-3 py-2 text-left text-sm font-medium text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+              className="flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left text-sm font-medium text-slate-600 transition-colors hover:bg-rose-50 hover:text-rose-700"
             >
+              <LogOut className="h-4 w-4" />
               Sign out
             </button>
           </form>
@@ -37,22 +57,22 @@ export function AppShell({
       </aside>
 
       {/* Mobile top bar */}
-      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white px-4 py-3 lg:hidden">
+      <header className="sticky top-0 z-10 flex items-center justify-between border-b border-slate-200 bg-white/90 px-4 py-3 backdrop-blur lg:hidden">
         <button
           aria-label="Open menu"
           onClick={() => setMobileOpen(true)}
           className="rounded-md p-2 text-slate-700 hover:bg-slate-100"
         >
-          <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden>
-            <path d="M3 5h14M3 10h14M3 15h14" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
+          <Menu className="h-5 w-5" />
         </button>
-        <Link href="/dashboard" className="text-sm font-semibold text-slate-900">
-          QuickBooks Mock
-        </Link>
+        <BrandMark />
         <form action="/api/auth/signout" method="post">
-          <button type="submit" className="text-xs font-medium text-slate-600">
-            Sign out
+          <button
+            type="submit"
+            aria-label="Sign out"
+            className="rounded-md p-2 text-slate-600 hover:bg-rose-50 hover:text-rose-700"
+          >
+            <LogOut className="h-5 w-5" />
           </button>
         </form>
       </header>
@@ -60,25 +80,25 @@ export function AppShell({
       {/* Mobile drawer */}
       {mobileOpen && (
         <div className="fixed inset-0 z-20 lg:hidden">
-          <div className="absolute inset-0 bg-slate-900/40" onClick={close} aria-hidden />
-          <div className="absolute inset-y-0 left-0 w-64 bg-white p-4 shadow-xl">
-            <div className="mb-4 flex items-center justify-between">
-              <Link href="/dashboard" onClick={close} className="text-lg font-semibold text-slate-900">
-                QuickBooks Mock
-              </Link>
+          <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={close} aria-hidden />
+          <div className="absolute inset-y-0 left-0 w-72 bg-white p-4 shadow-2xl">
+            <div className="mb-6 flex items-center justify-between">
+              <BrandMark />
               <button
                 aria-label="Close menu"
                 onClick={close}
-                className="rounded-md p-2 text-slate-700 hover:bg-slate-100"
+                className="rounded-md p-2 text-slate-600 hover:bg-slate-100"
               >
-                <svg width="18" height="18" viewBox="0 0 20 20" fill="none" aria-hidden>
-                  <path d="M5 5l10 10M15 5L5 15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-                </svg>
+                <X className="h-5 w-5" />
               </button>
             </div>
             <SidebarNav onNavigate={close} />
-            <p className="mt-6 px-3 text-xs text-slate-500">Signed in as</p>
-            <p className="px-3 truncate text-sm text-slate-700">{email}</p>
+            <div className="mt-6 border-t border-slate-200 pt-4">
+              <p className="px-3 text-xs font-medium uppercase tracking-wide text-slate-400">
+                Signed in
+              </p>
+              <p className="truncate px-3 text-sm text-slate-700">{email}</p>
+            </div>
           </div>
         </div>
       )}

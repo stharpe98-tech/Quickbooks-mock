@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
+import { ArrowLeft, FileText, User } from "lucide-react";
 import { getCustomer } from "@/lib/db/customers";
 import { listInvoicesForCustomer } from "@/lib/db/invoices";
 import { Card } from "@/components/ui/Card";
@@ -9,6 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { Table, THead, TBody, TR, TH, TD, EmptyState } from "@/components/ui/Table";
 import { StatusBadge } from "@/components/ui/Badge";
 import { formatMoney } from "@/lib/money";
+import { accents } from "@/lib/theme";
 import { CustomerForm } from "../CustomerForm";
 import { DeleteCustomerButton } from "./DeleteCustomerButton";
 
@@ -26,9 +28,14 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
       <PageHeader
         title={customer.name}
         description={customer.email ?? customer.phone ?? "Customer details"}
+        section="customers"
+        icon={User}
         actions={
           <Link href="/customers">
-            <Button variant="secondary">Back</Button>
+            <Button variant="secondary">
+              <ArrowLeft className="h-4 w-4" />
+              Back
+            </Button>
           </Link>
         }
       />
@@ -45,11 +52,16 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
         </Card>
 
         <div className="space-y-3">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-            Invoices
-          </h2>
+          <div className="flex items-center gap-2.5">
+            <span className={`flex h-8 w-8 items-center justify-center rounded-lg text-white ${accents.invoices.gradient}`}>
+              <FileText className="h-4 w-4" />
+            </span>
+            <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+              Invoices
+            </h2>
+          </div>
           {invoices.length === 0 ? (
-            <EmptyState title="No invoices for this customer yet." />
+            <EmptyState title="No invoices for this customer yet." icon={FileText} gradient={accents.invoices.gradient} />
           ) : (
             <Table>
               <THead>
@@ -65,7 +77,7 @@ export default async function CustomerDetailPage({ params }: { params: { id: str
                     <TD>
                       <Link
                         href={`/invoices/${inv.id}`}
-                        className="font-medium text-indigo-700 hover:underline"
+                        className="font-medium text-violet-700 hover:underline"
                       >
                         {format(new Date(inv.issue_date), "MMM d, yyyy")}
                       </Link>

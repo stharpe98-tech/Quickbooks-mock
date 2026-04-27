@@ -1,6 +1,7 @@
 "use client";
 
 import { useTransition } from "react";
+import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { deleteCustomerAction } from "../actions";
 
@@ -17,6 +18,7 @@ export function DeleteCustomerButton({ id }: { id: string }) {
         start(() => deleteCustomerAction(id));
       }}
     >
+      <Trash2 className="h-4 w-4" />
       {pending ? "Deleting…" : "Delete customer"}
     </Button>
   );

@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { format } from "date-fns";
+import { Plus, Receipt, ReceiptText } from "lucide-react";
 import { listExpenses } from "@/lib/db/expenses";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Table, THead, TBody, TR, TH, TD, EmptyState } from "@/components/ui/Table";
+import { accents } from "@/lib/theme";
 import { DeleteExpenseButton } from "./DeleteExpenseButton";
 
 export const dynamic = "force-dynamic";
@@ -18,15 +20,25 @@ export default async function ExpensesPage() {
       <PageHeader
         title="Expenses"
         description={`${expenses.length} expense${expenses.length === 1 ? "" : "s"} · total ${formatMoney(total)}`}
+        section="expenses"
+        icon={Receipt}
         actions={
           <Link href="/expenses/new">
-            <Button>+ New expense</Button>
+            <Button>
+              <Plus className="h-4 w-4" />
+              New expense
+            </Button>
           </Link>
         }
       />
 
       {expenses.length === 0 ? (
-        <EmptyState title="No expenses logged yet." hint="Track money going out to see your net." />
+        <EmptyState
+          title="No expenses logged yet."
+          hint="Track money going out to see your net."
+          icon={ReceiptText}
+          gradient={accents.expenses.gradient}
+        />
       ) : (
         <Table>
           <THead>
@@ -45,8 +57,18 @@ export default async function ExpensesPage() {
                   {format(new Date(e.expense_date), "MMM d, yyyy")}
                 </TD>
                 <TD className="font-medium text-slate-900">{e.vendor}</TD>
-                <TD className="text-slate-600">{e.category ?? "—"}</TD>
-                <TD className="text-right tabular-nums">{formatMoney(e.amount_cents)}</TD>
+                <TD>
+                  {e.category ? (
+                    <span className="inline-flex items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-medium text-amber-800 ring-1 ring-inset ring-amber-200">
+                      {e.category}
+                    </span>
+                  ) : (
+                    <span className="text-slate-400">—</span>
+                  )}
+                </TD>
+                <TD className="text-right tabular-nums font-semibold text-slate-900">
+                  {formatMoney(e.amount_cents)}
+                </TD>
                 <TD className="text-right">
                   <DeleteExpenseButton id={e.id} />
                 </TD>

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { FilePlus2, UserPlus } from "lucide-react";
 import { listCustomers } from "@/lib/db/customers";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -13,14 +14,17 @@ export default async function NewInvoicePage() {
   if (customers.length === 0) {
     return (
       <>
-        <PageHeader title="New invoice" />
+        <PageHeader title="New invoice" section="invoices" icon={FilePlus2} />
         <Card>
           <p className="text-sm text-slate-700">
             You need a customer before you can create an invoice.
           </p>
           <div className="mt-4">
             <Link href="/customers/new">
-              <Button>Create your first customer</Button>
+              <Button>
+                <UserPlus className="h-4 w-4" />
+                Create your first customer
+              </Button>
             </Link>
           </div>
         </Card>
@@ -30,7 +34,12 @@ export default async function NewInvoicePage() {
 
   return (
     <>
-      <PageHeader title="New invoice" description="Bill a customer." />
+      <PageHeader
+        title="New invoice"
+        description="Bill a customer."
+        section="invoices"
+        icon={FilePlus2}
+      />
       <Card>
         <InvoiceForm customers={customers.map((c) => ({ id: c.id, name: c.name }))} />
       </Card>

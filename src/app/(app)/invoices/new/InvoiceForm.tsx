@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
+import { Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { formatMoney, parseDollars } from "@/lib/money";
@@ -71,7 +72,8 @@ export function InvoiceForm({ customers }: { customers: CustomerOption[] }) {
         <div className="mb-2 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-slate-700">Line items</h3>
           <Button type="button" variant="secondary" size="sm" onClick={add}>
-            + Add line
+            <Plus className="h-4 w-4" />
+            Add line
           </Button>
         </div>
 
@@ -120,8 +122,9 @@ export function InvoiceForm({ customers }: { customers: CustomerOption[] }) {
                   onClick={() => remove(idx)}
                   disabled={lines.length === 1}
                   aria-label="Remove line"
+                  className="text-rose-600 hover:bg-rose-50 hover:text-rose-700"
                 >
-                  ×
+                  <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
             </div>

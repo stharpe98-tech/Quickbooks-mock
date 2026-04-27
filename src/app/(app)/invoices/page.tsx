@@ -1,11 +1,13 @@
 import Link from "next/link";
 import { format } from "date-fns";
+import { FileText, Plus, FilePlus2 } from "lucide-react";
 import { listInvoices } from "@/lib/db/invoices";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Table, THead, TBody, TR, TH, TD, EmptyState } from "@/components/ui/Table";
 import { StatusBadge } from "@/components/ui/Badge";
+import { accents } from "@/lib/theme";
 
 export const dynamic = "force-dynamic";
 
@@ -17,9 +19,14 @@ export default async function InvoicesPage() {
       <PageHeader
         title="Invoices"
         description="Bills you've sent to customers."
+        section="invoices"
+        icon={FileText}
         actions={
           <Link href="/invoices/new">
-            <Button>+ New invoice</Button>
+            <Button>
+              <Plus className="h-4 w-4" />
+              New invoice
+            </Button>
           </Link>
         }
       />
@@ -28,6 +35,8 @@ export default async function InvoicesPage() {
         <EmptyState
           title="No invoices yet."
           hint="Create your first invoice to start tracking income."
+          icon={FilePlus2}
+          gradient={accents.invoices.gradient}
         />
       ) : (
         <Table>
@@ -45,7 +54,7 @@ export default async function InvoicesPage() {
                 <TD>
                   <Link
                     href={`/invoices/${inv.id}`}
-                    className="font-medium text-indigo-700 hover:underline"
+                    className="font-medium text-violet-700 hover:text-violet-900 hover:underline"
                   >
                     {format(new Date(inv.issue_date), "MMM d, yyyy")}
                   </Link>
@@ -54,7 +63,9 @@ export default async function InvoicesPage() {
                 <TD>
                   <StatusBadge status={inv.status} />
                 </TD>
-                <TD className="text-right tabular-nums">{formatMoney(inv.total_cents)}</TD>
+                <TD className="text-right tabular-nums font-semibold text-slate-900">
+                  {formatMoney(inv.total_cents)}
+                </TD>
               </TR>
             ))}
           </TBody>
