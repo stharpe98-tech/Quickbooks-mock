@@ -1,3 +1,4 @@
+import { startOfMonth, subMonths, format } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
 import type { Expense, InvoiceWithCustomer } from "./types";
 
@@ -8,6 +9,15 @@ export type DashboardSummary = {
   outstanding_cents: number;
   recent_invoices: InvoiceWithCustomer[];
   recent_expenses: Expense[];
+};
+
+export type MonthlyBucket = {
+  /** First-of-month ISO date, e.g. "2026-04-01" — sortable + stable. */
+  month: string;
+  /** Short label for axis, e.g. "Apr". */
+  label: string;
+  income_cents: number;
+  expense_cents: number;
 };
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
@@ -58,4 +68,54 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
     recent_invoices: (recentInvoicesRes.data ?? []) as InvoiceWithCustomer[],
     recent_expenses: (recentExpensesRes.data ?? []) as Expense[],
   };
+}
+
+/**
+ * Returns the last `months` whole months of income (paid invoices, by issue_date)
+ * and expenses (by expense_date), oldest first. Empty months return zeros.
+ */
+export async function getMonthlyTotals(months = 6): Promise<MonthlyBucket[]> {
+  const supabase = createClient();
+  const now = new Date();
+  const startDate = startOfMonth(subMonths(now, months - 1));
+  const startIso = format(startDate, "yyyy-MM-dd");
+
+  const [paidInvoicesRes, expensesRes] = await Promise.all([
+    supabase
+      .from("invoices")
+      .select("issue_date, total_cents")
+      .eq("status", "paid")
+      .gte("issue_date", startIso),
+    supabase
+      .from("expenses")
+      .select("expense_date, amount_cents")
+      .gte("expense_date", startIso),
+  ]);
+  if (paidInvoicesRes.error) throw paidInvoicesRes.error;
+  if (expensesRes.error) throw expensesRes.error;
+
+  const buckets = new Map<string, MonthlyBucket>();
+  for (let i = 0; i < months; i++) {
+    const d = startOfMonth(subMonths(now, months - 1 - i));
+    const key = format(d, "yyyy-MM-dd");
+    buckets.set(key, {
+      month: key,
+      label: format(d, "MMM"),
+      income_cents: 0,
+      expense_cents: 0,
+    });
+  }
+
+  for (const row of paidInvoicesRes.data ?? []) {
+    const key = format(startOfMonth(new Date(row.issue_date)), "yyyy-MM-dd");
+    const bucket = buckets.get(key);
+    if (bucket) bucket.income_cents += row.total_cents ?? 0;
+  }
+  for (const row of expensesRes.data ?? []) {
+    const key = format(startOfMonth(new Date(row.expense_date)), "yyyy-MM-dd");
+    const bucket = buckets.get(key);
+    if (bucket) bucket.expense_cents += row.amount_cents ?? 0;
+  }
+
+  return Array.from(buckets.values());
 }

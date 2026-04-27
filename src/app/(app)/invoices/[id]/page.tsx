@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { format } from "date-fns";
-import { ArrowLeft, FileText } from "lucide-react";
+import { ArrowLeft, Download, FileText } from "lucide-react";
 import { getInvoice } from "@/lib/db/invoices";
 import { formatMoney } from "@/lib/money";
 import { Card } from "@/components/ui/Card";
@@ -26,12 +26,20 @@ export default async function InvoiceDetailPage({ params }: { params: { id: stri
         section="invoices"
         icon={FileText}
         actions={
-          <Link href="/invoices">
-            <Button variant="secondary">
-              <ArrowLeft className="h-4 w-4" />
-              Back
-            </Button>
-          </Link>
+          <>
+            <Link href="/invoices">
+              <Button variant="secondary">
+                <ArrowLeft className="h-4 w-4" />
+                Back
+              </Button>
+            </Link>
+            <a href={`/api/invoices/${invoice.id}/pdf`}>
+              <Button>
+                <Download className="h-4 w-4" />
+                Download PDF
+              </Button>
+            </a>
+          </>
         }
       />
 
