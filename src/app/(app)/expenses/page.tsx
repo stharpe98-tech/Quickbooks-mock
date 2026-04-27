@@ -4,6 +4,7 @@ import { Plus, Receipt, ReceiptText, SearchX } from "lucide-react";
 import { listExpenses } from "@/lib/db/expenses";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/Button";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { Table, THead, TBody, TR, TH, TD, EmptyState } from "@/components/ui/Table";
@@ -29,12 +30,15 @@ export default async function ExpensesPage({
         section="expenses"
         icon={Receipt}
         actions={
-          <Link href="/expenses/new">
-            <Button>
-              <Plus className="h-4 w-4" />
-              New expense
-            </Button>
-          </Link>
+          <>
+            <ExportCsvButton href="/api/expenses/csv" forwardParams={["q"]} />
+            <Link href="/expenses/new">
+              <Button>
+                <Plus className="h-4 w-4" />
+                New expense
+              </Button>
+            </Link>
+          </>
         }
       />
 

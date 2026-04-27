@@ -2,23 +2,31 @@ import Link from "next/link";
 import { format } from "date-fns";
 import { FileText, Plus, FilePlus2, SearchX } from "lucide-react";
 import { listInvoices } from "@/lib/db/invoices";
+import type { InvoiceStatus } from "@/lib/db/types";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/Button";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SearchBar } from "@/components/ui/SearchBar";
+import { StatusFilter } from "@/components/ui/StatusFilter";
 import { Table, THead, TBody, TR, TH, TD, EmptyState } from "@/components/ui/Table";
 import { StatusBadge } from "@/components/ui/Badge";
 import { accents } from "@/lib/theme";
 
 export const dynamic = "force-dynamic";
 
+const VALID_STATUSES: InvoiceStatus[] = ["draft", "sent", "paid"];
+
 export default async function InvoicesPage({
   searchParams,
 }: {
-  searchParams: { q?: string };
+  searchParams: { q?: string; status?: string };
 }) {
   const query = searchParams.q?.trim() ?? "";
-  const invoices = await listInvoices(query);
+  const status = VALID_STATUSES.includes(searchParams.status as InvoiceStatus)
+    ? (searchParams.status as InvoiceStatus)
+    : undefined;
+  const invoices = await listInvoices(query, status);
 
   return (
     <>
@@ -28,16 +36,22 @@ export default async function InvoicesPage({
         section="invoices"
         icon={FileText}
         actions={
-          <Link href="/invoices/new">
-            <Button>
-              <Plus className="h-4 w-4" />
-              New invoice
-            </Button>
-          </Link>
+          <>
+            <ExportCsvButton href="/api/invoices/csv" />
+            <Link href="/invoices/new">
+              <Button>
+                <Plus className="h-4 w-4" />
+                New invoice
+              </Button>
+            </Link>
+          </>
         }
       />
 
-      <SearchBar placeholder="Search by customer, status, or notes…" />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <SearchBar placeholder="Search by customer or notes…" />
+        <StatusFilter />
+      </div>
 
       {invoices.length === 0 ? (
         query ? (

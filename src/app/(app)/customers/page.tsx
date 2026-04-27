@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Mail, Phone, Plus, SearchX, UserPlus, Users } from "lucide-react";
 import { listCustomers } from "@/lib/db/customers";
 import { Button } from "@/components/ui/Button";
+import { ExportCsvButton } from "@/components/ui/ExportCsvButton";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { Table, THead, TBody, TR, TH, TD, EmptyState } from "@/components/ui/Table";
@@ -25,12 +26,15 @@ export default async function CustomersPage({
         section="customers"
         icon={Users}
         actions={
-          <Link href="/customers/new">
-            <Button>
-              <Plus className="h-4 w-4" />
-              New customer
-            </Button>
-          </Link>
+          <>
+            <ExportCsvButton href="/api/customers/csv" forwardParams={["q"]} />
+            <Link href="/customers/new">
+              <Button>
+                <Plus className="h-4 w-4" />
+                New customer
+              </Button>
+            </Link>
+          </>
         }
       />
 

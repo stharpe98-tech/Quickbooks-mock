@@ -7,12 +7,18 @@ import {
   Clock,
   FileText,
   LayoutDashboard,
+  PieChart,
   Receipt,
   Scale,
   Sparkles,
 } from "lucide-react";
-import { getDashboardSummary, getMonthlyTotals } from "@/lib/db/dashboard";
+import {
+  getDashboardSummary,
+  getInvoiceStatusBreakdown,
+  getMonthlyTotals,
+} from "@/lib/db/dashboard";
 import { MonthlyBars } from "@/components/charts/MonthlyBars";
+import { StatusDonut } from "@/components/charts/StatusDonut";
 import { formatMoney } from "@/lib/money";
 import { Card, StatCard } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
@@ -23,9 +29,10 @@ import { accents } from "@/lib/theme";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [summary, monthly] = await Promise.all([
+  const [summary, monthly, breakdown] = await Promise.all([
     getDashboardSummary(),
     getMonthlyTotals(6),
+    getInvoiceStatusBreakdown(),
   ]);
   const netGradient =
     summary.net_cents >= 0
@@ -72,20 +79,34 @@ export default async function DashboardPage() {
         />
       </div>
 
-      <Card>
-        <div className="mb-4 flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
-              <BarChart3 className="h-4 w-4" />
+      <div className="grid gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2.5">
+              <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white">
+                <BarChart3 className="h-4 w-4" />
+              </span>
+              <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
+                Last 6 months
+              </h2>
+            </div>
+            <p className="text-xs text-slate-500">Income vs expenses</p>
+          </div>
+          <MonthlyBars data={monthly} />
+        </Card>
+
+        <Card>
+          <div className="mb-4 flex items-center gap-2.5">
+            <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-violet-500 to-fuchsia-600 text-white">
+              <PieChart className="h-4 w-4" />
             </span>
             <h2 className="text-sm font-semibold uppercase tracking-wide text-slate-500">
-              Last 6 months
+              By status
             </h2>
           </div>
-          <p className="text-xs text-slate-500">Income vs expenses</p>
-        </div>
-        <MonthlyBars data={monthly} />
-      </Card>
+          <StatusDonut data={breakdown} />
+        </Card>
+      </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>

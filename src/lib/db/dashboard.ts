@@ -20,6 +20,14 @@ export type MonthlyBucket = {
   expense_cents: number;
 };
 
+export type StatusBreakdown = {
+  draft: { count: number; total_cents: number };
+  sent: { count: number; total_cents: number };
+  paid: { count: number; total_cents: number };
+  total_count: number;
+  total_cents: number;
+};
+
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   const supabase = createClient();
 
@@ -118,4 +126,31 @@ export async function getMonthlyTotals(months = 6): Promise<MonthlyBucket[]> {
   }
 
   return Array.from(buckets.values());
+}
+
+export async function getInvoiceStatusBreakdown(): Promise<StatusBreakdown> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("invoices")
+    .select("status, total_cents");
+  if (error) throw error;
+
+  const breakdown: StatusBreakdown = {
+    draft: { count: 0, total_cents: 0 },
+    sent: { count: 0, total_cents: 0 },
+    paid: { count: 0, total_cents: 0 },
+    total_count: 0,
+    total_cents: 0,
+  };
+
+  for (const row of data ?? []) {
+    const key = row.status as keyof Pick<StatusBreakdown, "draft" | "sent" | "paid">;
+    if (!(key in breakdown)) continue;
+    breakdown[key].count += 1;
+    breakdown[key].total_cents += row.total_cents ?? 0;
+    breakdown.total_count += 1;
+    breakdown.total_cents += row.total_cents ?? 0;
+  }
+
+  return breakdown;
 }

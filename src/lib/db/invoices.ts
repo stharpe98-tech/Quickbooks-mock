@@ -7,12 +7,17 @@ import type {
   InvoiceWithDetails,
 } from "./types";
 
-export async function listInvoices(query?: string): Promise<InvoiceWithCustomer[]> {
+export async function listInvoices(
+  query?: string,
+  status?: InvoiceStatus,
+): Promise<InvoiceWithCustomer[]> {
   const supabase = createClient();
   let q = supabase
     .from("invoices")
     .select("*, customer:customers(id, name)")
     .order("created_at", { ascending: false });
+
+  if (status) q = q.eq("status", status);
 
   const trimmed = query?.trim();
   if (trimmed) {
