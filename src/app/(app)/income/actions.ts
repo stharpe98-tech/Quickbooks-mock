@@ -2,16 +2,16 @@
 
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { expenseSchema } from "@/lib/schemas";
+import { incomeSchema } from "@/lib/schemas";
 import { parseDollars } from "@/lib/money";
-import { createExpense, deleteExpense } from "@/lib/db/expenses";
+import { createIncome, deleteIncome } from "@/lib/db/income";
 
 type FormState = { error: string | null };
 
-export async function createExpenseAction(_prev: FormState, formData: FormData): Promise<FormState> {
-  const parsed = expenseSchema.safeParse({
+export async function createIncomeAction(_prev: FormState, formData: FormData): Promise<FormState> {
+  const parsed = incomeSchema.safeParse({
     date: formData.get("date"),
-    vendor: formData.get("vendor"),
+    source: formData.get("source"),
     amount: formData.get("amount"),
     category_id: formData.get("category_id"),
     account_id: formData.get("account_id"),
@@ -23,9 +23,9 @@ export async function createExpenseAction(_prev: FormState, formData: FormData):
   if (cents === null) return { error: "Invalid amount" };
 
   try {
-    await createExpense({
+    await createIncome({
       date: parsed.data.date,
-      vendor: parsed.data.vendor,
+      source: parsed.data.source,
       amount_cents: cents,
       category_id: parsed.data.category_id,
       account_id: parsed.data.account_id,
@@ -34,13 +34,13 @@ export async function createExpenseAction(_prev: FormState, formData: FormData):
   } catch (e) {
     return { error: (e as Error).message };
   }
-  revalidatePath("/expenses");
+  revalidatePath("/income");
   revalidatePath("/dashboard");
-  redirect("/expenses");
+  redirect("/income");
 }
 
-export async function deleteExpenseAction(id: string): Promise<void> {
-  await deleteExpense(id);
-  revalidatePath("/expenses");
+export async function deleteIncomeAction(id: string): Promise<void> {
+  await deleteIncome(id);
+  revalidatePath("/income");
   revalidatePath("/dashboard");
 }

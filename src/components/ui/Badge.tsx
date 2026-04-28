@@ -1,23 +1,5 @@
 import { clsx } from "clsx";
-import type { LucideIcon } from "lucide-react";
-import { CircleDashed, Send, CheckCircle2 } from "lucide-react";
 import type { ReactNode } from "react";
-import type { InvoiceStatus } from "@/lib/db/types";
-
-const statusStyles: Record<InvoiceStatus, { className: string; icon: LucideIcon }> = {
-  draft: {
-    className: "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200",
-    icon: CircleDashed,
-  },
-  sent: {
-    className: "bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-200",
-    icon: Send,
-  },
-  paid: {
-    className: "bg-emerald-100 text-emerald-800 ring-1 ring-inset ring-emerald-200",
-    icon: CheckCircle2,
-  },
-};
 
 export function Badge({ children, className }: { children: ReactNode; className?: string }) {
   return (
@@ -32,12 +14,15 @@ export function Badge({ children, className }: { children: ReactNode; className?
   );
 }
 
-export function StatusBadge({ status }: { status: InvoiceStatus }) {
-  const { className, icon: Icon } = statusStyles[status];
-  return (
-    <Badge className={className}>
-      <Icon className="h-3 w-3" />
-      {status}
-    </Badge>
-  );
+export function PriorityBadge({ priority }: { priority: number }) {
+  const styles =
+    priority >= 3
+      ? "bg-rose-100 text-rose-800 ring-1 ring-inset ring-rose-200"
+      : priority === 2
+      ? "bg-amber-100 text-amber-800 ring-1 ring-inset ring-amber-200"
+      : priority === 1
+      ? "bg-sky-100 text-sky-800 ring-1 ring-inset ring-sky-200"
+      : "bg-slate-100 text-slate-700 ring-1 ring-inset ring-slate-200";
+  const label = priority >= 3 ? "Urgent" : priority === 2 ? "High" : priority === 1 ? "Med" : "Low";
+  return <Badge className={styles}>{label}</Badge>;
 }

@@ -3,7 +3,7 @@
 import { useFormState, useFormStatus } from "react-dom";
 import { Button } from "@/components/ui/Button";
 import { Input, Select, Textarea } from "@/components/ui/Input";
-import { createExpenseAction } from "../actions";
+import { createIncomeAction } from "../actions";
 
 type Option = { id: string; name: string };
 
@@ -11,19 +11,19 @@ function SubmitButton() {
   const { pending } = useFormStatus();
   return (
     <Button type="submit" disabled={pending}>
-      {pending ? "Saving…" : "Save expense"}
+      {pending ? "Saving…" : "Save income"}
     </Button>
   );
 }
 
-export function ExpenseForm({
+export function IncomeForm({
   categories,
   accounts,
 }: {
   categories: Option[];
   accounts: Option[];
 }) {
-  const [state, formAction] = useFormState(createExpenseAction, { error: null });
+  const [state, formAction] = useFormState(createIncomeAction, { error: null });
   const today = new Date().toISOString().slice(0, 10);
 
   return (
@@ -32,7 +32,7 @@ export function ExpenseForm({
         <Input name="date" type="date" label="Date" defaultValue={today} required />
         <Input name="amount" label="Amount (USD)" inputMode="decimal" placeholder="0.00" required />
       </div>
-      <Input name="vendor" label="Vendor" placeholder="Whole Foods, Netflix, gas station…" required />
+      <Input name="source" label="Source" placeholder="Paycheck, client invoice, refund…" required />
       <div className="grid gap-4 sm:grid-cols-2">
         <Select name="category_id" label="Category" defaultValue="">
           <option value="">— None —</option>
@@ -42,7 +42,7 @@ export function ExpenseForm({
             </option>
           ))}
         </Select>
-        <Select name="account_id" label="Paid from account" defaultValue="">
+        <Select name="account_id" label="Deposit to account" defaultValue="">
           <option value="">— None —</option>
           {accounts.map((a) => (
             <option key={a.id} value={a.id}>
