@@ -1,6 +1,8 @@
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
 import { isTellerConfigured, tellerFetch } from "@/lib/teller";
+import { categorize } from "./categorize";
+import { getCategoryNameMap, seedDefaultCategoriesForUser } from "./categories";
 
 export type TellerEnrollment = {
   id: string;
@@ -192,6 +194,11 @@ export async function syncTransactionsForEnrollment(
 ): Promise<{ added: number }> {
   const sb = service();
 
+  // Make sure default categories exist for this user so auto-categorization
+  // has somewhere to land. No-op if they're already there.
+  await seedDefaultCategoriesForUser(enrollment.user_id, sb);
+  const categoryMap = await getCategoryNameMap(enrollment.user_id, sb);
+
   // Map teller_account_id → our internal accounts.id for this enrollment.
   const { data: accountRows } = await sb
     .from("accounts")
@@ -246,6 +253,14 @@ export async function syncTransactionsForEnrollment(
         t.description?.trim() ||
         (isIncome ? "Deposit" : "Transaction");
 
+      // Auto-categorize: match the label against keyword rules and resolve
+      // to one of the user's category_ids (if a matching category exists).
+      const kind = isIncome ? "income" : "expense";
+      const categoryName = categorize(label, kind);
+      const categoryId = categoryName
+        ? categoryMap.get(`${kind}:${categoryName}`) ?? null
+        : null;
+
       const row = isIncome
         ? {
             user_id: enrollment.user_id,
@@ -253,6 +268,7 @@ export async function syncTransactionsForEnrollment(
             source: label,
             amount_cents: cents,
             account_id: ourAccountId,
+            category_id: categoryId,
             teller_transaction_id: t.id,
             notes: null as string | null,
           }
@@ -262,6 +278,7 @@ export async function syncTransactionsForEnrollment(
             vendor: label,
             amount_cents: cents,
             account_id: ourAccountId,
+            category_id: categoryId,
             teller_transaction_id: t.id,
             notes: null as string | null,
           };
