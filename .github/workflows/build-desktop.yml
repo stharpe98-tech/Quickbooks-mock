@@ -1,0 +1,88 @@
+name: Build desktop installers
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag to attach installers to (e.g. v0.1.0). Leave empty for a draft prerelease."
+        required: false
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.os }})
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            artifact_glob: "desktop/dist/Daybook-Setup-*.exe"
+          - os: macos-latest
+            artifact_glob: "desktop/dist/Daybook-*.dmg"
+          - os: ubuntu-latest
+            artifact_glob: "desktop/dist/Daybook-*.AppImage"
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: desktop
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+          cache-dependency-path: desktop/package-lock.json
+
+      - name: Install
+        run: npm ci || npm install
+
+      - name: Build installer
+        env:
+          # electron-builder respects this for code-signing; we don't sign
+          # yet, so leave it empty. Setting it to false also avoids
+          # unnecessary signature verification work.
+          CSC_IDENTITY_AUTO_DISCOVERY: "false"
+        run: npm run dist
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-${{ matrix.os }}
+          path: ${{ matrix.artifact_glob }}
+          if-no-files-found: error
+
+  release:
+    name: Attach to release
+    needs: build
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+
+      - name: Flatten
+        run: |
+          mkdir -p release
+          find artifacts -type f \( -name "*.exe" -o -name "*.dmg" -o -name "*.AppImage" \) -exec cp {} release/ \;
+          ls -la release/
+
+      - name: Create / update release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: release/*
+          draft: false
+          generate_release_notes: true
+          fail_on_unmatched_files: false
