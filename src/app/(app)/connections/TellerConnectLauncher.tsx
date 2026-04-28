@@ -66,6 +66,7 @@ export function TellerConnectLauncher({
 }) {
   const router = useRouter();
   const [busy, setBusy] = useState(false);
+  const [ready, setReady] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const instanceRef = useRef<TellerConnectInstance | null>(null);
 
@@ -105,6 +106,7 @@ export function TellerConnectLauncher({
             setBusy(false);
           },
         });
+        setReady(true);
       })
       .catch((e: unknown) => setError((e as Error).message));
     return () => {
@@ -116,7 +118,7 @@ export function TellerConnectLauncher({
     <div className="flex flex-col items-end gap-2">
       <Button
         onClick={() => instanceRef.current?.open()}
-        disabled={busy || !instanceRef.current}
+        disabled={busy || !ready}
       >
         {busy ? (
           <>
