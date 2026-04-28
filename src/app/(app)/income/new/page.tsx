@@ -1,23 +1,23 @@
-import { ArrowDownCircle } from "lucide-react";
+import { ArrowUpCircle } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { listCategories } from "@/lib/db/categories";
 import { listAccounts } from "@/lib/db/accounts";
-import { ExpenseForm } from "./ExpenseForm";
+import { IncomeForm } from "./IncomeForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function NewExpensePage() {
+export default async function NewIncomePage() {
   const [categories, accounts] = await Promise.all([
-    listCategories("expense"),
+    listCategories("income"),
     listAccounts(),
   ]);
 
   return (
     <>
-      <PageHeader title="New expense" description="Log money going out." section="expenses" icon={ArrowDownCircle} />
+      <PageHeader title="New income" description="Log money coming in." section="income" icon={ArrowUpCircle} />
       <Card>
-        <ExpenseForm
+        <IncomeForm
           categories={categories.map((c) => ({ id: c.id, name: c.name }))}
           accounts={accounts.map((a) => ({ id: a.id, name: a.name }))}
         />

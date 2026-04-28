@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { LogOut, Menu, Wallet, X } from "lucide-react";
+import { LogOut, Menu, NotebookPen, X } from "lucide-react";
 import { SidebarNav } from "./Sidebar";
-import { brandGradient, brandGradientText } from "@/lib/theme";
+import { brandGradient, brandGradientText, brandName } from "@/lib/theme";
 
 function BrandMark() {
   return (
@@ -12,10 +12,10 @@ function BrandMark() {
       <span
         className={`flex h-9 w-9 items-center justify-center rounded-lg ${brandGradient} text-white shadow-md`}
       >
-        <Wallet className="h-5 w-5" />
+        <NotebookPen className="h-5 w-5" />
       </span>
       <span className={`text-lg font-bold tracking-tight ${brandGradientText}`}>
-        QuickBooks Mock
+        {brandName}
       </span>
     </Link>
   );
@@ -38,8 +38,10 @@ export function AppShell({
         <div className="mb-6 px-2 pt-1">
           <BrandMark />
         </div>
-        <SidebarNav />
-        <div className="mt-auto space-y-1 border-t border-slate-200 pt-4">
+        <div className="flex-1 overflow-y-auto pr-1">
+          <SidebarNav />
+        </div>
+        <div className="mt-4 space-y-1 border-t border-slate-200 pt-4">
           <p className="px-3 text-xs font-medium uppercase tracking-wide text-slate-400">
             Signed in
           </p>
@@ -81,7 +83,7 @@ export function AppShell({
       {mobileOpen && (
         <div className="fixed inset-0 z-20 lg:hidden">
           <div className="absolute inset-0 bg-slate-900/50 backdrop-blur-sm" onClick={close} aria-hidden />
-          <div className="absolute inset-y-0 left-0 w-72 bg-white p-4 shadow-2xl">
+          <div className="absolute inset-y-0 left-0 flex w-72 flex-col bg-white p-4 shadow-2xl">
             <div className="mb-6 flex items-center justify-between">
               <BrandMark />
               <button
@@ -92,8 +94,10 @@ export function AppShell({
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <SidebarNav onNavigate={close} />
-            <div className="mt-6 border-t border-slate-200 pt-4">
+            <div className="flex-1 overflow-y-auto pr-1">
+              <SidebarNav onNavigate={close} />
+            </div>
+            <div className="mt-4 border-t border-slate-200 pt-4">
               <p className="px-3 text-xs font-medium uppercase tracking-wide text-slate-400">
                 Signed in
               </p>

@@ -1,58 +1,58 @@
 import Link from "next/link";
 import { format } from "date-fns";
-import { ArrowDownCircle, Plus, ReceiptText } from "lucide-react";
-import { listExpenses } from "@/lib/db/expenses";
+import { ArrowUpCircle, Plus, Sparkles } from "lucide-react";
+import { listIncome } from "@/lib/db/income";
 import { formatMoney } from "@/lib/money";
 import { Button } from "@/components/ui/Button";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { SearchBar } from "@/components/ui/SearchBar";
 import { Table, THead, TBody, TR, TH, TD, EmptyState } from "@/components/ui/Table";
 import { accents } from "@/lib/theme";
-import { DeleteExpenseButton } from "./DeleteExpenseButton";
+import { DeleteIncomeButton } from "./DeleteIncomeButton";
 
 export const dynamic = "force-dynamic";
 
-export default async function ExpensesPage({
+export default async function IncomePage({
   searchParams,
 }: {
   searchParams: { q?: string };
 }) {
   const query = searchParams.q?.trim() ?? "";
-  const items = await listExpenses(query);
+  const items = await listIncome(query);
   const total = items.reduce((s, r) => s + r.amount_cents, 0);
 
   return (
     <>
       <PageHeader
-        title="Expenses"
-        description={`${items.length} expense${items.length === 1 ? "" : "s"} · ${formatMoney(total)}`}
-        section="expenses"
-        icon={ArrowDownCircle}
+        title="Income"
+        description={`${items.length} entr${items.length === 1 ? "y" : "ies"} · ${formatMoney(total)}`}
+        section="income"
+        icon={ArrowUpCircle}
         actions={
-          <Link href="/expenses/new">
+          <Link href="/income/new">
             <Button>
               <Plus className="h-4 w-4" />
-              New expense
+              New income
             </Button>
           </Link>
         }
       />
 
-      <SearchBar placeholder="Search by vendor or notes…" />
+      <SearchBar placeholder="Search by source or notes…" />
 
       {items.length === 0 ? (
         <EmptyState
-          title={query ? `No expenses match "${query}".` : "No expenses logged yet."}
-          hint={query ? "Try a different search." : "Track money going out to see your net."}
-          icon={ReceiptText}
-          gradient={accents.expenses.gradient}
+          title={query ? `No income matches "${query}".` : "No income logged yet."}
+          hint={query ? "Try a different search." : "Log a paycheck, side gig, or refund."}
+          icon={Sparkles}
+          gradient={accents.income.gradient}
         />
       ) : (
         <Table>
           <THead>
             <TR>
               <TH>Date</TH>
-              <TH>Vendor</TH>
+              <TH>Source</TH>
               <TH>Category</TH>
               <TH>Account</TH>
               <TH className="text-right">Amount</TH>
@@ -63,10 +63,10 @@ export default async function ExpensesPage({
             {items.map((r) => (
               <TR key={r.id}>
                 <TD className="text-slate-600">{format(new Date(r.date), "MMM d, yyyy")}</TD>
-                <TD className="font-medium text-slate-900">{r.vendor}</TD>
+                <TD className="font-medium text-slate-900">{r.source}</TD>
                 <TD>
                   {r.category ? (
-                    <span className="inline-flex items-center rounded-full bg-rose-100 px-2.5 py-0.5 text-xs font-medium text-rose-800 ring-1 ring-inset ring-rose-200">
+                    <span className="inline-flex items-center rounded-full bg-emerald-100 px-2.5 py-0.5 text-xs font-medium text-emerald-800 ring-1 ring-inset ring-emerald-200">
                       {r.category.name}
                     </span>
                   ) : (
@@ -74,11 +74,11 @@ export default async function ExpensesPage({
                   )}
                 </TD>
                 <TD className="text-slate-600">{r.account?.name ?? "—"}</TD>
-                <TD className="text-right tabular-nums font-semibold text-rose-700">
-                  −{formatMoney(r.amount_cents)}
+                <TD className="text-right tabular-nums font-semibold text-emerald-700">
+                  +{formatMoney(r.amount_cents)}
                 </TD>
                 <TD className="text-right">
-                  <DeleteExpenseButton id={r.id} />
+                  <DeleteIncomeButton id={r.id} />
                 </TD>
               </TR>
             ))}

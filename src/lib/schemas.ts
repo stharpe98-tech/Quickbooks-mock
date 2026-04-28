@@ -3,77 +3,86 @@ import { z } from "zod";
 const moneyString = z
   .string()
   .min(1, "Required")
-  .refine((v) => /^\d+(\.\d{1,2})?$/.test(v.replace(/[$,\s]/g, "")), {
+  .refine((v) => /^-?\d+(\.\d{1,2})?$/.test(v.replace(/[$,\s]/g, "")), {
     message: "Enter a valid amount (e.g. 12.34)",
   });
 
-const optionalEmail = z
+const optionalText = (max: number) =>
+  z
+    .string()
+    .trim()
+    .max(max)
+    .optional()
+    .or(z.literal("").transform(() => undefined));
+
+const optionalUuid = z
   .string()
-  .trim()
-  .email("Invalid email")
+  .uuid()
   .optional()
   .or(z.literal("").transform(() => undefined));
 
-export const customerSchema = z.object({
-  name: z.string().trim().min(1, "Name is required").max(120),
-  email: optionalEmail,
-  phone: z
-    .string()
-    .trim()
-    .max(40)
-    .optional()
-    .or(z.literal("").transform(() => undefined)),
+const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date required");
+
+// ─── Money ───────────────────────────────────────────────────────────────
+
+export const incomeSchema = z.object({
+  date: isoDate,
+  source: z.string().trim().min(1, "Source is required").max(120),
+  amount: moneyString,
+  category_id: optionalUuid,
+  account_id: optionalUuid,
+  notes: optionalText(500),
 });
-export type CustomerInput = z.infer<typeof customerSchema>;
+export type IncomeInput = z.infer<typeof incomeSchema>;
 
 export const expenseSchema = z.object({
-  expense_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date required"),
+  date: isoDate,
   vendor: z.string().trim().min(1, "Vendor is required").max(120),
   amount: moneyString,
-  category: z
-    .string()
-    .trim()
-    .max(60)
-    .optional()
-    .or(z.literal("").transform(() => undefined)),
-  notes: z
-    .string()
-    .trim()
-    .max(500)
-    .optional()
-    .or(z.literal("").transform(() => undefined)),
+  category_id: optionalUuid,
+  account_id: optionalUuid,
+  notes: optionalText(500),
 });
 export type ExpenseInput = z.infer<typeof expenseSchema>;
 
-export const invoiceLineItemSchema = z.object({
-  description: z.string().trim().min(1, "Description required").max(200),
-  quantity: z
-    .string()
-    .min(1, "Required")
-    .refine((v) => !Number.isNaN(parseFloat(v)) && parseFloat(v) > 0, {
-      message: "Must be > 0",
-    }),
-  unit_price: moneyString,
+export const categorySchema = z.object({
+  kind: z.enum(["income", "expense"]),
+  name: z.string().trim().min(1, "Name required").max(60),
+  color: optionalText(20),
+  icon: optionalText(40),
 });
-export type InvoiceLineItemInput = z.infer<typeof invoiceLineItemSchema>;
+export type CategoryInput = z.infer<typeof categorySchema>;
 
-export const invoiceSchema = z.object({
-  customer_id: z.string().uuid("Choose a customer"),
-  issue_date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Date required"),
-  due_date: z
-    .string()
-    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date required")
-    .optional()
-    .or(z.literal("").transform(() => undefined)),
-  status: z.enum(["draft", "sent", "paid"]),
-  notes: z
-    .string()
-    .trim()
-    .max(1000)
-    .optional()
-    .or(z.literal("").transform(() => undefined)),
-  line_items: z.array(invoiceLineItemSchema).min(1, "Add at least one line item"),
+export const accountSchema = z.object({
+  name: z.string().trim().min(1, "Name required").max(60),
+  kind: z.enum([
+    "checking",
+    "savings",
+    "credit_card",
+    "cash",
+    "investment",
+    "loan",
+    "other",
+  ]),
+  balance: moneyString,
+  currency: z.string().length(3).default("USD"),
 });
-export type InvoiceInput = z.infer<typeof invoiceSchema>;
+export type AccountInput = z.infer<typeof accountSchema>;
 
-export const invoiceStatusSchema = z.enum(["draft", "sent", "paid"]);
+// ─── Productivity ────────────────────────────────────────────────────────
+
+export const taskSchema = z.object({
+  title: z.string().trim().min(1, "Title required").max(200),
+  notes: optionalText(1000),
+  due_at: isoDate.optional().or(z.literal("").transform(() => undefined)),
+  priority: z.coerce.number().int().min(0).max(3).default(0),
+  project_id: optionalUuid,
+});
+export type TaskInput = z.infer<typeof taskSchema>;
+
+export const projectSchema = z.object({
+  name: z.string().trim().min(1, "Name required").max(80),
+  color: optionalText(20),
+  icon: optionalText(40),
+});
+export type ProjectInput = z.infer<typeof projectSchema>;

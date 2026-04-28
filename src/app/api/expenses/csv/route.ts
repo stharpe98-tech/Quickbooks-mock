@@ -10,11 +10,12 @@ export async function GET(request: NextRequest) {
   const expenses = await listExpenses(query);
 
   const rows: (string | number | null)[][] = [
-    ["Date", "Vendor", "Category", "Amount (USD)", "Notes"],
+    ["Date", "Vendor", "Category", "Account", "Amount (USD)", "Notes"],
     ...expenses.map((e) => [
-      e.expense_date,
+      e.date,
       e.vendor,
-      e.category,
+      e.category?.name ?? null,
+      e.account?.name ?? null,
       centsToDollars(e.amount_cents).toFixed(2),
       e.notes,
     ]),

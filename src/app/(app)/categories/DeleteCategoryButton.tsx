@@ -3,9 +3,9 @@
 import { useTransition } from "react";
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/Button";
-import { deleteExpenseAction } from "./actions";
+import { deleteCategoryAction } from "./actions";
 
-export function DeleteExpenseButton({ id }: { id: string }) {
+export function DeleteCategoryButton({ id, name }: { id: string; name: string }) {
   const [pending, start] = useTransition();
   return (
     <Button
@@ -13,11 +13,11 @@ export function DeleteExpenseButton({ id }: { id: string }) {
       variant="ghost"
       size="sm"
       disabled={pending}
-      aria-label="Delete expense"
+      aria-label={`Delete ${name}`}
       className="text-rose-600 hover:bg-rose-50 hover:text-rose-700"
       onClick={() => {
-        if (!confirm("Delete this expense?")) return;
-        start(() => deleteExpenseAction(id));
+        if (!confirm(`Delete category "${name}"? Linked entries will become uncategorized.`)) return;
+        start(() => deleteCategoryAction(id));
       }}
     >
       <Trash2 className="h-4 w-4" />
