@@ -6,6 +6,7 @@ import {
   parse,
 } from "date-fns";
 import { createClient } from "@/lib/supabase/server";
+import type { AccountKind } from "./types";
 
 export type CategoryTotal = {
   category_id: string | null;
@@ -138,5 +139,82 @@ export async function getSpendingTrend(months = 12): Promise<{
   return {
     months: Array.from(byMonth.values()),
     categories: Array.from(catTotals.values()).sort((a, b) => b.total_cents - a.total_cents),
+  };
+}
+
+// ─── Balance Sheet ───────────────────────────────────────────────────────
+
+export type BalanceSheetAccountRow = {
+  id: string;
+  name: string;
+  kind: AccountKind;
+  balance_cents: number;
+};
+
+export type BalanceSheetGroup = {
+  kind: AccountKind;
+  label: string;
+  total_cents: number;
+  rows: BalanceSheetAccountRow[];
+};
+
+export type BalanceSheet = {
+  as_of: string;
+  assets_cents: number;
+  liabilities_cents: number;
+  net_worth_cents: number;
+  asset_groups: BalanceSheetGroup[];
+  liability_groups: BalanceSheetGroup[];
+};
+
+const KIND_LABEL: Record<AccountKind, string> = {
+  checking: "Checking",
+  savings: "Savings",
+  cash: "Cash",
+  investment: "Investments",
+  other: "Other",
+  credit_card: "Credit cards",
+  loan: "Loans",
+};
+
+const ASSET_KINDS: AccountKind[] = ["checking", "savings", "cash", "investment", "other"];
+const LIABILITY_KINDS: AccountKind[] = ["credit_card", "loan"];
+
+export async function getBalanceSheet(): Promise<BalanceSheet> {
+  const supabase = createClient();
+  const { data, error } = await supabase
+    .from("accounts")
+    .select("id, name, kind, balance_cents")
+    .eq("archived", false)
+    .order("name", { ascending: true });
+  if (error) throw error;
+
+  const rows = (data ?? []) as BalanceSheetAccountRow[];
+  const groupOf = (kinds: AccountKind[]): BalanceSheetGroup[] =>
+    kinds
+      .map((kind) => {
+        const groupRows = rows.filter((r) => r.kind === kind);
+        const total = groupRows.reduce((s, r) => s + (r.balance_cents ?? 0), 0);
+        return {
+          kind,
+          label: KIND_LABEL[kind],
+          total_cents: total,
+          rows: groupRows,
+        };
+      })
+      .filter((g) => g.rows.length > 0);
+
+  const asset_groups = groupOf(ASSET_KINDS);
+  const liability_groups = groupOf(LIABILITY_KINDS);
+  const assets_cents = asset_groups.reduce((s, g) => s + g.total_cents, 0);
+  const liabilities_cents = liability_groups.reduce((s, g) => s + g.total_cents, 0);
+
+  return {
+    as_of: format(new Date(), "yyyy-MM-dd"),
+    assets_cents,
+    liabilities_cents,
+    net_worth_cents: assets_cents - liabilities_cents,
+    asset_groups,
+    liability_groups,
   };
 }
