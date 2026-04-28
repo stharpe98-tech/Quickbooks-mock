@@ -15,7 +15,8 @@ export type Section =
   | "habits"
   | "goals"
   | "notes"
-  | "journal";
+  | "journal"
+  | "settings";
 
 type Accent = {
   label: string;
@@ -163,6 +164,16 @@ export const accents: Record<Section, Accent> = {
     gradient: "bg-gradient-to-br from-teal-400 to-emerald-600",
     ring: "ring-teal-500",
     hex: "#14b8a6",
+  },
+  settings: {
+    label: "Settings",
+    solidBg: "bg-zinc-600",
+    solidText: "text-white",
+    softBg: "bg-zinc-100",
+    softText: "text-zinc-700",
+    gradient: "bg-gradient-to-br from-zinc-500 to-slate-700",
+    ring: "ring-zinc-500",
+    hex: "#52525b",
   },
 };
 

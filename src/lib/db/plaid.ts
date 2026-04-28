@@ -50,8 +50,8 @@ export async function deletePlaidItem(id: string): Promise<void> {
  * The user_id must be the current Supabase user.
  */
 export async function createLinkToken(userId: string): Promise<string> {
-  if (!isPlaidConfigured()) throw new Error("Plaid not configured");
-  const client = getPlaidClient();
+  if (!(await isPlaidConfigured())) throw new Error("Plaid not configured");
+  const client = await getPlaidClient();
   const res = await client.linkTokenCreate({
     user: { client_user_id: userId },
     client_name: "Daybook",
@@ -67,7 +67,7 @@ export async function createLinkToken(userId: string): Promise<string> {
  * and seed our `accounts` table from the institution's accounts.
  */
 export async function exchangePublicToken(publicToken: string, userId: string): Promise<PlaidItem> {
-  const client = getPlaidClient();
+  const client = await getPlaidClient();
   const exchange = await client.itemPublicTokenExchange({ public_token: publicToken });
   const accessToken = exchange.data.access_token;
   const itemId = exchange.data.item_id;
@@ -136,7 +136,7 @@ const ACCOUNT_SUBTYPE_KIND_MAP: Record<string, string> = {
 };
 
 export async function syncAccountsForItem(item: PlaidItem): Promise<void> {
-  const client = getPlaidClient();
+  const client = await getPlaidClient();
   const sb = service();
   const res = await client.accountsGet({ access_token: item.access_token });
 
@@ -176,7 +176,7 @@ export async function syncTransactionsForItem(item: PlaidItem): Promise<{
   modified: number;
   removed: number;
 }> {
-  const client = getPlaidClient();
+  const client = await getPlaidClient();
   const sb = service();
 
   let cursor: string | undefined = item.last_sync_cursor ?? undefined;
@@ -282,7 +282,7 @@ export async function syncAllPlaidItems(): Promise<{
   modified: number;
   removed: number;
 }> {
-  if (!isPlaidConfigured()) return { items: 0, added: 0, modified: 0, removed: 0 };
+  if (!(await isPlaidConfigured())) return { items: 0, added: 0, modified: 0, removed: 0 };
   const sb = service();
   const { data: items, error } = await sb.from("plaid_items").select("*");
   if (error) throw error;

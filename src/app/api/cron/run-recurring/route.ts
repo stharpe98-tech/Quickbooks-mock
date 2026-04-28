@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { runDueRecurring } from "@/lib/db/recurring";
 import { syncAllPlaidItems } from "@/lib/db/plaid";
+import { getAnyAppSettings } from "@/lib/db/settings";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -9,12 +10,14 @@ export const dynamic = "force-dynamic";
  * Vercel Cron entry-point. Runs daily, materializes income/expense rows
  * from each due recurring transaction, and pulls fresh Plaid transactions.
  *
- * Vercel sends `Authorization: Bearer ${CRON_SECRET}` if you set the
- * `CRON_SECRET` env var on the project. We accept calls either with no
- * secret configured or with the matching bearer.
+ * Auth: env var CRON_SECRET takes precedence; falls back to the cron_secret
+ * stored on the in-app settings row. Calls with no configured secret are
+ * accepted (useful for local development).
  */
 export async function GET(request: NextRequest) {
-  const secret = process.env.CRON_SECRET;
+  const envSecret = process.env.CRON_SECRET;
+  const settings = envSecret ? null : await getAnyAppSettings();
+  const secret = envSecret ?? settings?.cron_secret ?? null;
   if (secret) {
     const auth = request.headers.get("authorization");
     if (auth !== `Bearer ${secret}`) {

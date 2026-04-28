@@ -10,7 +10,7 @@ import { ItemActions } from "./ItemActions";
 export const dynamic = "force-dynamic";
 
 export default async function ConnectionsPage() {
-  const configured = isPlaidConfigured();
+  const configured = await isPlaidConfigured();
   const items = configured ? await listPlaidItems().catch(() => []) : [];
 
   return (
@@ -31,9 +31,13 @@ export default async function ConnectionsPage() {
             <div className="text-sm">
               <p className="font-semibold text-amber-900">Plaid not configured</p>
               <p className="mt-1 text-amber-800">
-                To enable bank connections, set <code className="rounded bg-amber-100 px-1">PLAID_CLIENT_ID</code> and{" "}
-                <code className="rounded bg-amber-100 px-1">PLAID_SECRET</code> in your Vercel project&apos;s environment variables. Optionally set{" "}
-                <code className="rounded bg-amber-100 px-1">PLAID_ENV</code> to <code>sandbox</code> (default), <code>development</code>, or <code>production</code>.
+                Add your Plaid credentials in{" "}
+                <a className="font-semibold underline" href="/settings">
+                  Settings
+                </a>{" "}
+                to enable bank connections. (You can also set{" "}
+                <code className="rounded bg-amber-100 px-1">PLAID_CLIENT_ID</code> and{" "}
+                <code className="rounded bg-amber-100 px-1">PLAID_SECRET</code> as env vars.)
               </p>
               <p className="mt-2 text-amber-800">
                 Get sandbox credentials free at{" "}

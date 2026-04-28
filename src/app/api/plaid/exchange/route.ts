@@ -6,7 +6,7 @@ import { isPlaidConfigured } from "@/lib/plaid";
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
-  if (!isPlaidConfigured()) {
+  if (!(await isPlaidConfigured())) {
     return NextResponse.json({ error: "Plaid is not configured." }, { status: 501 });
   }
   const supabase = createClient();

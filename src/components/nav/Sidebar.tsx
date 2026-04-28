@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   ListChecks,
   RefreshCw,
+  Settings,
   StickyNote,
   Tags,
   Target,
@@ -65,6 +66,10 @@ const GROUPS: NavGroup[] = [
       { href: "/notes", section: "notes", icon: StickyNote },
       { href: "/journal", section: "journal", icon: BookOpen },
     ],
+  },
+  {
+    title: "System",
+    items: [{ href: "/settings", section: "settings", icon: Settings }],
   },
 ];
 
