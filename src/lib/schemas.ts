@@ -86,3 +86,12 @@ export const projectSchema = z.object({
   icon: optionalText(40),
 });
 export type ProjectInput = z.infer<typeof projectSchema>;
+
+export const habitSchema = z.object({
+  name: z.string().trim().min(1, "Name required").max(80),
+  frequency: z.enum(["daily", "weekly"]).default("daily"),
+  target_per_period: z.coerce.number().int().min(1).max(99).default(1),
+  color: optionalText(20),
+  icon: optionalText(40),
+});
+export type HabitInput = z.infer<typeof habitSchema>;
