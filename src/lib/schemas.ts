@@ -155,10 +155,19 @@ export const settingsSchema = z.object({
   plaid_secret: z.string().max(200).optional().default(""),
   plaid_env: z.enum(["sandbox", "development", "production"]).default("sandbox"),
   cron_secret: z.string().max(200).optional().default(""),
+  teller_application_id: z.string().max(200).optional().default(""),
+  teller_certificate: z.string().max(20_000).optional().default(""),
+  teller_private_key: z.string().max(20_000).optional().default(""),
+  teller_signing_secret: z.string().max(400).optional().default(""),
+  teller_env: z.enum(["sandbox", "development", "production"]).default("sandbox"),
   // Hidden inputs the form sets when the user clicks a "Clear" link.
   clear_plaid_client_id: z.string().optional(),
   clear_plaid_secret: z.string().optional(),
   clear_cron_secret: z.string().optional(),
+  clear_teller_application_id: z.string().optional(),
+  clear_teller_certificate: z.string().optional(),
+  clear_teller_private_key: z.string().optional(),
+  clear_teller_signing_secret: z.string().optional(),
 });
 export type SettingsInput = z.infer<typeof settingsSchema>;
 

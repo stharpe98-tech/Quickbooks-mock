@@ -1,6 +1,6 @@
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
-import type { AppSettings, PlaidEnvName } from "./types";
+import type { AppSettings, PlaidEnvName, TellerEnvName } from "./types";
 
 function service() {
   return createServiceClient(
@@ -54,6 +54,11 @@ export type AppSettingsInput = {
   plaid_secret?: string | null;
   plaid_env?: PlaidEnvName;
   cron_secret?: string | null;
+  teller_application_id?: string | null;
+  teller_certificate?: string | null;
+  teller_private_key?: string | null;
+  teller_signing_secret?: string | null;
+  teller_env?: TellerEnvName;
 };
 
 export async function upsertMyAppSettings(input: AppSettingsInput): Promise<void> {
@@ -64,21 +69,20 @@ export async function upsertMyAppSettings(input: AppSettingsInput): Promise<void
   if (!user) throw new Error("Not authenticated");
 
   const existing = await getMyAppSettings();
+  const keep = <T,>(next: T | undefined, prev: T | null | undefined): T | null =>
+    next !== undefined ? next : ((prev as T | null) ?? null);
+
   const merged = {
     user_id: user.id,
-    plaid_client_id:
-      input.plaid_client_id !== undefined
-        ? input.plaid_client_id
-        : (existing?.plaid_client_id ?? null),
-    plaid_secret:
-      input.plaid_secret !== undefined
-        ? input.plaid_secret
-        : (existing?.plaid_secret ?? null),
+    plaid_client_id: keep(input.plaid_client_id, existing?.plaid_client_id),
+    plaid_secret: keep(input.plaid_secret, existing?.plaid_secret),
     plaid_env: input.plaid_env ?? existing?.plaid_env ?? "sandbox",
-    cron_secret:
-      input.cron_secret !== undefined
-        ? input.cron_secret
-        : (existing?.cron_secret ?? null),
+    cron_secret: keep(input.cron_secret, existing?.cron_secret),
+    teller_application_id: keep(input.teller_application_id, existing?.teller_application_id),
+    teller_certificate: keep(input.teller_certificate, existing?.teller_certificate),
+    teller_private_key: keep(input.teller_private_key, existing?.teller_private_key),
+    teller_signing_secret: keep(input.teller_signing_secret, existing?.teller_signing_secret),
+    teller_env: input.teller_env ?? existing?.teller_env ?? "sandbox",
   };
 
   const { error } = await sb

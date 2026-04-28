@@ -54,6 +54,11 @@ export default async function SettingsPage() {
   const settings = await getMyAppSettings();
   const plaidEnvVarSet = Boolean(process.env.PLAID_CLIENT_ID && process.env.PLAID_SECRET);
   const cronEnvVarSet = Boolean(process.env.CRON_SECRET);
+  const tellerEnvVarSet = Boolean(
+    process.env.TELLER_APPLICATION_ID &&
+      process.env.TELLER_CERTIFICATE &&
+      process.env.TELLER_PRIVATE_KEY,
+  );
 
   const envStatuses = SUPABASE_ENV_VARS.map((v) => ({
     ...v,
@@ -75,15 +80,22 @@ export default async function SettingsPage() {
           plaid_secret: settings?.plaid_secret ?? null,
           plaid_env: settings?.plaid_env ?? "sandbox",
           cron_secret: settings?.cron_secret ?? null,
+          teller_application_id: settings?.teller_application_id ?? null,
+          teller_env: settings?.teller_env ?? "sandbox",
         }}
         masks={{
           plaid_client_id: settings?.plaid_client_id ?? null,
           plaid_secret: maskSecret(settings?.plaid_secret),
           cron_secret: maskSecret(settings?.cron_secret),
+          teller_application_id: settings?.teller_application_id ?? null,
+          teller_certificate: settings?.teller_certificate ? "PEM (saved)" : null,
+          teller_private_key: settings?.teller_private_key ? "PEM (saved)" : null,
+          teller_signing_secret: maskSecret(settings?.teller_signing_secret),
         }}
         envOverrides={{
           plaid: plaidEnvVarSet,
           cron: cronEnvVarSet,
+          teller: tellerEnvVarSet,
         }}
       />
 
