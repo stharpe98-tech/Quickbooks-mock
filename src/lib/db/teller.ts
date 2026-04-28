@@ -151,18 +151,34 @@ export async function syncAccountsForEnrollment(enrollment: TellerEnrollment): P
       // Best-effort; not fatal.
     }
 
-    await sb.from("accounts").upsert(
-      {
-        user_id: enrollment.user_id,
-        teller_account_id: a.id,
-        teller_enrollment_id: enrollment.id,
-        name: a.name || a.institution?.name || "Account",
-        kind: mapKind(a),
-        balance_cents: balanceCents,
-        currency: a.currency ?? "USD",
-      },
-      { onConflict: "user_id,teller_account_id", ignoreDuplicates: false },
-    );
+    const row = {
+      user_id: enrollment.user_id,
+      teller_account_id: a.id,
+      teller_enrollment_id: enrollment.id,
+      name: a.name || a.institution?.name || "Account",
+      kind: mapKind(a),
+      balance_cents: balanceCents,
+      currency: a.currency ?? "USD",
+    };
+
+    // The (user_id, teller_account_id) uniqueness is enforced by a *partial*
+    // unique index, which PostgREST's on_conflict can't target. Do a manual
+    // SELECT-then-INSERT/UPDATE instead.
+    const { data: existing, error: selErr } = await sb
+      .from("accounts")
+      .select("id")
+      .eq("user_id", enrollment.user_id)
+      .eq("teller_account_id", a.id)
+      .maybeSingle();
+    if (selErr) throw new Error(`account lookup failed: ${selErr.message}`);
+
+    if (existing) {
+      const { error } = await sb.from("accounts").update(row).eq("id", existing.id);
+      if (error) throw new Error(`account update failed: ${error.message}`);
+    } else {
+      const { error } = await sb.from("accounts").insert(row);
+      if (error) throw new Error(`account insert failed: ${error.message}`);
+    }
   }
 }
 
@@ -193,7 +209,33 @@ export async function syncTransactionsForEnrollment(
       enrollment.access_token,
     );
 
+    // Pre-fetch existing teller_transaction_ids for this user so we can dedup
+    // without relying on PostgREST on_conflict (the unique index is partial).
+    const txIds = txs.map((t) => t.id);
+    const existingIds = new Set<string>();
+    if (txIds.length > 0) {
+      const [incExisting, expExisting] = await Promise.all([
+        sb
+          .from("income")
+          .select("teller_transaction_id")
+          .eq("user_id", enrollment.user_id)
+          .in("teller_transaction_id", txIds),
+        sb
+          .from("expenses")
+          .select("teller_transaction_id")
+          .eq("user_id", enrollment.user_id)
+          .in("teller_transaction_id", txIds),
+      ]);
+      for (const r of incExisting.data ?? []) {
+        if (r.teller_transaction_id) existingIds.add(r.teller_transaction_id);
+      }
+      for (const r of expExisting.data ?? []) {
+        if (r.teller_transaction_id) existingIds.add(r.teller_transaction_id);
+      }
+    }
+
     for (const t of txs) {
+      if (existingIds.has(t.id)) continue;
       const amt = parseFloat(t.amount);
       if (!Number.isFinite(amt)) continue;
       const isIncome = amt > 0;
@@ -224,11 +266,15 @@ export async function syncTransactionsForEnrollment(
             notes: null as string | null,
           };
       const table = isIncome ? "income" : "expenses";
-      const { error } = await sb.from(table).upsert(row, {
-        onConflict: "user_id,teller_transaction_id",
-        ignoreDuplicates: true,
-      });
-      if (!error) added++;
+      const { error } = await sb.from(table).insert(row);
+      if (error) {
+        // 23505 = unique_violation: a concurrent sync inserted it; ignore.
+        if (error.code !== "23505") {
+          throw new Error(`${table} insert failed: ${error.message}`);
+        }
+      } else {
+        added++;
+      }
     }
   }
 
