@@ -184,14 +184,10 @@ export type JournalEntry = {
 
 // ─── System ──────────────────────────────────────────────────────────────
 
-export type PlaidEnvName = "sandbox" | "development" | "production";
 export type TellerEnvName = "sandbox" | "development" | "production";
 
 export type AppSettings = {
   user_id: string;
-  plaid_client_id: string | null;
-  plaid_secret: string | null;
-  plaid_env: PlaidEnvName;
   cron_secret: string | null;
   teller_application_id: string | null;
   teller_certificate: string | null;

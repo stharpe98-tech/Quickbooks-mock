@@ -2,24 +2,19 @@
 
 import { useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
-import { Banknote, Building2, CheckCircle2, Eye, EyeOff, Timer } from "lucide-react";
+import { Building2, CheckCircle2, Eye, EyeOff, Timer } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Card } from "@/components/ui/Card";
 import { Input, Select, Textarea } from "@/components/ui/Input";
 import { saveSettingsAction } from "./actions";
 
 type Initial = {
-  plaid_client_id: string | null;
-  plaid_secret: string | null;
-  plaid_env: "sandbox" | "development" | "production";
   cron_secret: string | null;
   teller_application_id: string | null;
   teller_env: "sandbox" | "development" | "production";
 };
 
 type Masks = {
-  plaid_client_id: string | null;
-  plaid_secret: string | null;
   cron_secret: string | null;
   teller_application_id: string | null;
   teller_certificate: string | null;
@@ -172,18 +167,15 @@ export function SettingsForm({
 }: {
   initial: Initial;
   masks: Masks;
-  envOverrides: { plaid: boolean; cron: boolean; teller: boolean };
+  envOverrides: { cron: boolean; teller: boolean };
 }) {
   const [state, formAction] = useFormState(saveSettingsAction, { error: null, ok: false });
-  const [clearPlaidId, setClearPlaidId] = useState(false);
-  const [clearPlaidSecret, setClearPlaidSecret] = useState(false);
   const [clearCron, setClearCron] = useState(false);
   const [clearTellerAppId, setClearTellerAppId] = useState(false);
   const [clearTellerCert, setClearTellerCert] = useState(false);
   const [clearTellerKey, setClearTellerKey] = useState(false);
   const [clearTellerSigning, setClearTellerSigning] = useState(false);
 
-  const plaidConfigured = Boolean(masks.plaid_client_id && masks.plaid_secret);
   const tellerConfigured = Boolean(
     masks.teller_application_id && masks.teller_certificate && masks.teller_private_key,
   );
@@ -191,8 +183,6 @@ export function SettingsForm({
   return (
     <form action={formAction} className="space-y-4">
       {/* Hidden inputs the form sets when "Clear" is clicked. */}
-      <input type="hidden" name="clear_plaid_client_id" value={clearPlaidId ? "1" : ""} />
-      <input type="hidden" name="clear_plaid_secret" value={clearPlaidSecret ? "1" : ""} />
       <input type="hidden" name="clear_cron_secret" value={clearCron ? "1" : ""} />
       <input
         type="hidden"
@@ -215,95 +205,6 @@ export function SettingsForm({
         value={clearTellerSigning ? "1" : ""}
       />
 
-      {/* ─── Plaid ─────────────────────────────────────────── */}
-      <Card>
-        <div className="mb-4 flex items-start justify-between gap-3">
-          <div className="flex items-start gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-gradient-to-br from-green-400 to-emerald-600 text-white">
-              <Banknote className="h-5 w-5" />
-            </span>
-            <div>
-              <p className="text-sm font-semibold text-slate-900">Plaid</p>
-              <p className="text-xs text-slate-500">
-                Bank connections, transaction sync, balances.
-              </p>
-            </div>
-          </div>
-          {envOverrides.plaid ? (
-            <StatusBadge tone="muted">Env override active</StatusBadge>
-          ) : plaidConfigured ? (
-            <StatusBadge tone="ok">
-              <CheckCircle2 className="h-3 w-3" />
-              Configured
-            </StatusBadge>
-          ) : (
-            <StatusBadge tone="muted">Not configured</StatusBadge>
-          )}
-        </div>
-
-        {envOverrides.plaid && (
-          <p className="mb-4 rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-800 ring-1 ring-inset ring-amber-200">
-            <code className="rounded bg-amber-100 px-1">PLAID_CLIENT_ID</code> /{" "}
-            <code className="rounded bg-amber-100 px-1">PLAID_SECRET</code> are set as environment
-            variables. Those take precedence — values you save here are kept as a backup but
-            won&apos;t be used until the env vars are removed.
-          </p>
-        )}
-
-        <div className="grid gap-4 sm:grid-cols-2">
-          <div className="space-y-1">
-            <div className="flex items-center justify-between">
-              <label htmlFor="plaid_client_id" className="block text-sm font-medium text-slate-700">
-                Client ID
-              </label>
-              {masks.plaid_client_id && !clearPlaidId && (
-                <button
-                  type="button"
-                  onClick={() => setClearPlaidId(true)}
-                  className="text-xs font-medium text-rose-600 hover:text-rose-700"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-            <Input
-              name="plaid_client_id"
-              id="plaid_client_id"
-              autoComplete="off"
-              placeholder={
-                clearPlaidId
-                  ? "(will be cleared on save)"
-                  : masks.plaid_client_id
-                    ? `current: ${masks.plaid_client_id}`
-                    : "67e23acc..."
-              }
-            />
-            <p className="text-xs text-slate-500">Leave blank to keep the existing value.</p>
-          </div>
-
-          <Select
-            name="plaid_env"
-            label="Environment"
-            defaultValue={initial.plaid_env}
-          >
-            <option value="sandbox">Sandbox</option>
-            <option value="development">Development</option>
-            <option value="production">Production</option>
-          </Select>
-        </div>
-
-        <div className="mt-4">
-          <SecretInput
-            name="plaid_secret"
-            label="Secret"
-            placeholder="Plaid secret"
-            currentMask={masks.plaid_secret}
-            cleared={clearPlaidSecret}
-            onClear={() => setClearPlaidSecret(true)}
-          />
-        </div>
-      </Card>
-
       {/* ─── Teller ────────────────────────────────────────── */}
       <Card>
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -314,7 +215,7 @@ export function SettingsForm({
             <div>
               <p className="text-sm font-semibold text-slate-900">Teller</p>
               <p className="text-xs text-slate-500">
-                Plaid alternative — uses mTLS client certs, free dev tier, no business onboarding.
+                Bank connections via mTLS client certificates. Free dev tier, US banks.
               </p>
             </div>
           </div>
@@ -418,7 +319,7 @@ export function SettingsForm({
             <div>
               <p className="text-sm font-semibold text-slate-900">Cron secret</p>
               <p className="text-xs text-slate-500">
-                Bearer token for the daily recurring/Plaid sync at <code>/api/cron/run-recurring</code>.
+                Bearer token for the daily Teller + recurring sync at <code>/api/cron/run-recurring</code>.
               </p>
             </div>
           </div>

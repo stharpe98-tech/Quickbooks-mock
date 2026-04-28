@@ -1,6 +1,6 @@
 import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
-import type { AppSettings, PlaidEnvName, TellerEnvName } from "./types";
+import type { AppSettings, TellerEnvName } from "./types";
 
 function service() {
   return createServiceClient(
@@ -28,7 +28,7 @@ export async function getMyAppSettings(): Promise<AppSettings | null> {
 
 /**
  * Single-user-app helper: returns the only app_settings row, no auth required.
- * Used by background paths (cron) and by Plaid helpers that don't have a user
+ * Used by background paths (cron) and by Teller helpers that don't have a user
  * context. Bypasses RLS via service-role.
  */
 export async function getAnyAppSettings(): Promise<AppSettings | null> {
@@ -50,9 +50,6 @@ export async function getAnyAppSettings(): Promise<AppSettings | null> {
 
 export type AppSettingsInput = {
   // `null` clears the value, `undefined` leaves it unchanged.
-  plaid_client_id?: string | null;
-  plaid_secret?: string | null;
-  plaid_env?: PlaidEnvName;
   cron_secret?: string | null;
   teller_application_id?: string | null;
   teller_certificate?: string | null;
@@ -74,9 +71,6 @@ export async function upsertMyAppSettings(input: AppSettingsInput): Promise<void
 
   const merged = {
     user_id: user.id,
-    plaid_client_id: keep(input.plaid_client_id, existing?.plaid_client_id),
-    plaid_secret: keep(input.plaid_secret, existing?.plaid_secret),
-    plaid_env: input.plaid_env ?? existing?.plaid_env ?? "sandbox",
     cron_secret: keep(input.cron_secret, existing?.cron_secret),
     teller_application_id: keep(input.teller_application_id, existing?.teller_application_id),
     teller_certificate: keep(input.teller_certificate, existing?.teller_certificate),

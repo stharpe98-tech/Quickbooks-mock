@@ -1,6 +1,5 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { runDueRecurring } from "@/lib/db/recurring";
-import { syncAllPlaidItems } from "@/lib/db/plaid";
 import { syncAllTellerEnrollments } from "@/lib/db/teller";
 import { getAnyAppSettings } from "@/lib/db/settings";
 
@@ -9,7 +8,7 @@ export const dynamic = "force-dynamic";
 
 /**
  * Vercel Cron entry-point. Runs daily, materializes income/expense rows
- * from each due recurring transaction, and pulls fresh Plaid transactions.
+ * from each due recurring transaction, and pulls fresh Teller transactions.
  *
  * Auth: env var CRON_SECRET takes precedence; falls back to the cron_secret
  * stored on the in-app settings row. Calls with no configured secret are
@@ -28,12 +27,10 @@ export async function GET(request: NextRequest) {
 
   try {
     const recurring = await runDueRecurring();
-    const plaid = await syncAllPlaidItems();
     const teller = await syncAllTellerEnrollments();
     return NextResponse.json({
       ok: true,
       recurring,
-      plaid,
       teller,
     });
   } catch (e) {
