@@ -199,14 +199,18 @@ export async function syncTransactionsForEnrollment(
   await seedDefaultCategoriesForUser(enrollment.user_id, sb);
   const categoryMap = await getCategoryNameMap(enrollment.user_id, sb);
 
-  // Map teller_account_id → our internal accounts.id for this enrollment.
+  // Map teller_account_id → (our id, kind). Kind is needed because Teller's
+  // sign convention flips on credit cards: positive = charge (expense) on
+  // a credit account, but positive = inflow (income) on a depository one.
   const { data: accountRows } = await sb
     .from("accounts")
-    .select("id, teller_account_id")
+    .select("id, teller_account_id, kind")
     .eq("teller_enrollment_id", enrollment.id);
-  const accountMap = new Map<string, string>();
+  const accountMap = new Map<string, { id: string; kind: string }>();
   for (const r of accountRows ?? []) {
-    if (r.teller_account_id) accountMap.set(r.teller_account_id, r.id);
+    if (r.teller_account_id) {
+      accountMap.set(r.teller_account_id, { id: r.id, kind: r.kind });
+    }
   }
 
   let added = 0;
@@ -245,9 +249,13 @@ export async function syncTransactionsForEnrollment(
       if (existingIds.has(t.id)) continue;
       const amt = parseFloat(t.amount);
       if (!Number.isFinite(amt)) continue;
-      const isIncome = amt > 0;
+      const account = accountMap.get(t.account_id) ?? null;
+      const ourAccountId = account?.id ?? null;
+      // Credit/loan accounts: positive = charge (expense). Everything else:
+      // positive = inflow (income). Default to depository when we don't know.
+      const isLiability = account?.kind === "credit_card" || account?.kind === "loan";
+      const isIncome = isLiability ? amt < 0 : amt > 0;
       const cents = Math.round(Math.abs(amt) * 100);
-      const ourAccountId = accountMap.get(t.account_id) ?? null;
       const label =
         t.details?.counterparty?.name?.trim() ||
         t.description?.trim() ||
