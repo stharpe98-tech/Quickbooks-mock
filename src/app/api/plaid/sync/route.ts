@@ -10,7 +10,7 @@ export const runtime = "nodejs";
  * POST /api/plaid/sync  body: { item_id: string }   (UUID of plaid_items row)
  */
 export async function POST(request: NextRequest) {
-  if (!isPlaidConfigured()) {
+  if (!(await isPlaidConfigured())) {
     return NextResponse.json({ error: "Plaid is not configured." }, { status: 501 });
   }
   const supabase = createClient();

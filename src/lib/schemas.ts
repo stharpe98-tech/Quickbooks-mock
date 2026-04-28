@@ -145,6 +145,23 @@ export type JournalInput = z.infer<typeof journalSchema>;
 
 // ─── Recurring ───────────────────────────────────────────────────────────
 
+// ─── System / Settings ───────────────────────────────────────────────────
+
+// Distinguishes "leave untouched" (empty string) from "explicit clear"
+// (a special sentinel sent by the form's "Clear" link). For the Plaid env
+// dropdown we always submit the chosen value.
+export const settingsSchema = z.object({
+  plaid_client_id: z.string().max(200).optional().default(""),
+  plaid_secret: z.string().max(200).optional().default(""),
+  plaid_env: z.enum(["sandbox", "development", "production"]).default("sandbox"),
+  cron_secret: z.string().max(200).optional().default(""),
+  // Hidden inputs the form sets when the user clicks a "Clear" link.
+  clear_plaid_client_id: z.string().optional(),
+  clear_plaid_secret: z.string().optional(),
+  clear_cron_secret: z.string().optional(),
+});
+export type SettingsInput = z.infer<typeof settingsSchema>;
+
 export const recurringSchema = z.object({
   name: z.string().trim().min(1, "Name required").max(120),
   kind: z.enum(["income", "expense"]),

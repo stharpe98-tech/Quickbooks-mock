@@ -181,3 +181,16 @@ export type JournalEntry = {
   created_at: string;
   updated_at: string;
 };
+
+// ─── System ──────────────────────────────────────────────────────────────
+
+export type PlaidEnvName = "sandbox" | "development" | "production";
+
+export type AppSettings = {
+  user_id: string;
+  plaid_client_id: string | null;
+  plaid_secret: string | null;
+  plaid_env: PlaidEnvName;
+  cron_secret: string | null;
+  updated_at: string;
+};
