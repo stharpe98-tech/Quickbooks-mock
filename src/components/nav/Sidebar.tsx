@@ -6,10 +6,12 @@ import { clsx } from "clsx";
 import {
   ArrowDownCircle,
   ArrowUpCircle,
+  BarChart3,
   BookOpen,
   CheckSquare,
   LayoutDashboard,
   ListChecks,
+  RefreshCw,
   StickyNote,
   Tags,
   Target,
@@ -41,8 +43,10 @@ const GROUPS: NavGroup[] = [
     items: [
       { href: "/income", section: "income", icon: ArrowUpCircle },
       { href: "/expenses", section: "expenses", icon: ArrowDownCircle },
+      { href: "/recurring", section: "recurring", icon: RefreshCw },
       { href: "/categories", section: "categories", icon: Tags },
       { href: "/accounts", section: "accounts", icon: Wallet },
+      { href: "/reports", section: "reports", icon: BarChart3 },
     ],
   },
   {

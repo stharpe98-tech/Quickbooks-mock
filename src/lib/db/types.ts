@@ -119,6 +119,30 @@ export type HabitEntry = {
   created_at: string;
 };
 
+export type RecurringTransaction = {
+  id: string;
+  user_id: string;
+  name: string;
+  kind: "income" | "expense";
+  amount_cents: number;
+  category_id: string | null;
+  account_id: string | null;
+  frequency: "weekly" | "monthly" | "yearly";
+  day_of_month: number | null;
+  day_of_week: number | null;
+  start_date: string;
+  next_run_date: string;
+  last_run_date: string | null;
+  active: boolean;
+  notes: string | null;
+  created_at: string;
+};
+
+export type RecurringWithRefs = RecurringTransaction & {
+  category: Pick<Category, "id" | "name" | "color"> | null;
+  account: Pick<Account, "id" | "name"> | null;
+};
+
 export type Goal = {
   id: string;
   user_id: string;

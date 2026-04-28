@@ -8,6 +8,8 @@ export type Section =
   | "expenses"
   | "categories"
   | "accounts"
+  | "recurring"
+  | "reports"
   | "tasks"
   | "habits"
   | "goals"
@@ -80,6 +82,26 @@ export const accents: Record<Section, Accent> = {
     gradient: "bg-gradient-to-br from-sky-400 to-blue-600",
     ring: "ring-sky-500",
     hex: "#0ea5e9",
+  },
+  recurring: {
+    label: "Recurring",
+    solidBg: "bg-fuchsia-500",
+    solidText: "text-white",
+    softBg: "bg-fuchsia-50",
+    softText: "text-fuchsia-700",
+    gradient: "bg-gradient-to-br from-fuchsia-500 to-purple-600",
+    ring: "ring-fuchsia-500",
+    hex: "#d946ef",
+  },
+  reports: {
+    label: "Reports",
+    solidBg: "bg-blue-500",
+    solidText: "text-white",
+    softBg: "bg-blue-50",
+    softText: "text-blue-700",
+    gradient: "bg-gradient-to-br from-blue-400 to-indigo-600",
+    ring: "ring-blue-500",
+    hex: "#3b82f6",
   },
   tasks: {
     label: "Tasks",
