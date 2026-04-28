@@ -1,9 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import "./globals.css";
+import { brandName } from "@/lib/theme";
 
 export const metadata: Metadata = {
-  title: "QuickBooks Mock",
-  description: "A simple bookkeeping app — customers, invoices, expenses.",
+  title: brandName,
+  description: "A personal life-OS — money, tasks, habits, goals, notes, journal.",
 };
 
 export const viewport: Viewport = {
