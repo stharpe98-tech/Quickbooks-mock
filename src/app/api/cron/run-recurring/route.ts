@@ -1,12 +1,13 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { runDueRecurring } from "@/lib/db/recurring";
+import { syncAllPlaidItems } from "@/lib/db/plaid";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /**
  * Vercel Cron entry-point. Runs daily, materializes income/expense rows
- * from each due recurring transaction, and rolls next_run_date forward.
+ * from each due recurring transaction, and pulls fresh Plaid transactions.
  *
  * Vercel sends `Authorization: Bearer ${CRON_SECRET}` if you set the
  * `CRON_SECRET` env var on the project. We accept calls either with no
@@ -22,8 +23,13 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const result = await runDueRecurring();
-    return NextResponse.json({ ok: true, created: result.created });
+    const recurring = await runDueRecurring();
+    const plaid = await syncAllPlaidItems();
+    return NextResponse.json({
+      ok: true,
+      recurring,
+      plaid,
+    });
   } catch (e) {
     return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 500 });
   }
