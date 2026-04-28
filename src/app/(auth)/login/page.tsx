@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Wallet } from "lucide-react";
+import { NotebookPen } from "lucide-react";
 import { LoginForm } from "./LoginForm";
-import { brandGradient, brandGradientText } from "@/lib/theme";
+import { brandGradient, brandGradientText, brandName } from "@/lib/theme";
 
-export const metadata: Metadata = { title: "Sign in — QuickBooks Mock" };
+export const metadata: Metadata = { title: `Sign in — ${brandName}` };
 
 export default function LoginPage() {
   return (
@@ -27,10 +27,10 @@ export default function LoginPage() {
           <span
             className={`mb-4 flex h-14 w-14 items-center justify-center rounded-2xl ${brandGradient} text-white shadow-lg`}
           >
-            <Wallet className="h-7 w-7" />
+            <NotebookPen className="h-7 w-7" />
           </span>
           <h1 className={`text-3xl font-bold tracking-tight ${brandGradientText}`}>
-            QuickBooks Mock
+            {brandName}
           </h1>
           <p className="mt-2 text-sm text-slate-600">
             Sign in with a magic link to your inbox.
@@ -40,7 +40,7 @@ export default function LoginPage() {
           <LoginForm />
         </div>
         <p className="mt-6 text-center text-xs text-slate-500">
-          Bookkeeping that follows you everywhere.
+          Money, tasks, habits — all in one place.
         </p>
       </div>
     </div>
