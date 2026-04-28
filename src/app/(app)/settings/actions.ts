@@ -11,17 +11,12 @@ export async function saveSettingsAction(
   formData: FormData,
 ): Promise<FormState> {
   const parsed = settingsSchema.safeParse({
-    plaid_client_id: formData.get("plaid_client_id") ?? "",
-    plaid_secret: formData.get("plaid_secret") ?? "",
-    plaid_env: formData.get("plaid_env") ?? "sandbox",
     cron_secret: formData.get("cron_secret") ?? "",
     teller_application_id: formData.get("teller_application_id") ?? "",
     teller_certificate: formData.get("teller_certificate") ?? "",
     teller_private_key: formData.get("teller_private_key") ?? "",
     teller_signing_secret: formData.get("teller_signing_secret") ?? "",
     teller_env: formData.get("teller_env") ?? "sandbox",
-    clear_plaid_client_id: formData.get("clear_plaid_client_id") ?? "",
-    clear_plaid_secret: formData.get("clear_plaid_secret") ?? "",
     clear_cron_secret: formData.get("clear_cron_secret") ?? "",
     clear_teller_application_id: formData.get("clear_teller_application_id") ?? "",
     clear_teller_certificate: formData.get("clear_teller_certificate") ?? "",
@@ -47,9 +42,6 @@ export async function saveSettingsAction(
 
   try {
     await upsertMyAppSettings({
-      plaid_client_id: resolve(v.plaid_client_id, v.clear_plaid_client_id),
-      plaid_secret: resolve(v.plaid_secret, v.clear_plaid_secret),
-      plaid_env: v.plaid_env,
       cron_secret: resolve(v.cron_secret, v.clear_cron_secret),
       teller_application_id: resolve(v.teller_application_id, v.clear_teller_application_id),
       teller_certificate: resolvePem(v.teller_certificate, v.clear_teller_certificate),

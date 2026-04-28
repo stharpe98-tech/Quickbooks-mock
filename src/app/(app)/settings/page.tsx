@@ -52,7 +52,6 @@ const SUPABASE_ENV_VARS: EnvStatus[] = [
 
 export default async function SettingsPage() {
   const settings = await getMyAppSettings();
-  const plaidEnvVarSet = Boolean(process.env.PLAID_CLIENT_ID && process.env.PLAID_SECRET);
   const cronEnvVarSet = Boolean(process.env.CRON_SECRET);
   const tellerEnvVarSet = Boolean(
     process.env.TELLER_APPLICATION_ID &&
@@ -76,16 +75,11 @@ export default async function SettingsPage() {
 
       <SettingsForm
         initial={{
-          plaid_client_id: settings?.plaid_client_id ?? null,
-          plaid_secret: settings?.plaid_secret ?? null,
-          plaid_env: settings?.plaid_env ?? "sandbox",
           cron_secret: settings?.cron_secret ?? null,
           teller_application_id: settings?.teller_application_id ?? null,
           teller_env: settings?.teller_env ?? "sandbox",
         }}
         masks={{
-          plaid_client_id: settings?.plaid_client_id ?? null,
-          plaid_secret: maskSecret(settings?.plaid_secret),
           cron_secret: maskSecret(settings?.cron_secret),
           teller_application_id: settings?.teller_application_id ?? null,
           teller_certificate: settings?.teller_certificate ? "PEM (saved)" : null,
@@ -93,7 +87,6 @@ export default async function SettingsPage() {
           teller_signing_secret: maskSecret(settings?.teller_signing_secret),
         }}
         envOverrides={{
-          plaid: plaidEnvVarSet,
           cron: cronEnvVarSet,
           teller: tellerEnvVarSet,
         }}
@@ -173,14 +166,9 @@ export default async function SettingsPage() {
               <li>Secrets are stored in your own Supabase database, protected by RLS.</li>
               <li>Leave a field blank to keep the existing value. Use &ldquo;Clear&rdquo; to remove it.</li>
               <li>
-                For Plaid sandbox creds, sign up at{" "}
-                <a
-                  className="underline"
-                  href="https://dashboard.plaid.com/team/keys"
-                  target="_blank"
-                  rel="noreferrer"
-                >
-                  dashboard.plaid.com
+                For Teller dev creds, sign up at{" "}
+                <a className="underline" href="https://teller.io" target="_blank" rel="noreferrer">
+                  teller.io
                 </a>
                 .
               </li>
