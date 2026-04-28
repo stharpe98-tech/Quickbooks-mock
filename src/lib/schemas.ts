@@ -95,3 +95,50 @@ export const habitSchema = z.object({
   icon: optionalText(40),
 });
 export type HabitInput = z.infer<typeof habitSchema>;
+
+// ─── Goals ───────────────────────────────────────────────────────────────
+
+export const goalSchema = z.object({
+  name: z.string().trim().min(1, "Name required").max(120),
+  description: optionalText(1000),
+  kind: z.enum(["milestone", "numeric"]).default("milestone"),
+  target_value: z
+    .string()
+    .optional()
+    .or(z.literal("").transform(() => undefined))
+    .refine((v) => v === undefined || /^\d+(\.\d{1,2})?$/.test(v), { message: "Invalid target" }),
+  unit: optionalText(20),
+  target_date: isoDate.optional().or(z.literal("").transform(() => undefined)),
+});
+export type GoalInput = z.infer<typeof goalSchema>;
+
+export const goalProgressSchema = z.object({
+  current_value: z
+    .string()
+    .min(1, "Required")
+    .refine((v) => /^\d+(\.\d{1,2})?$/.test(v), { message: "Invalid value" }),
+});
+
+// ─── Notes ───────────────────────────────────────────────────────────────
+
+export const noteSchema = z.object({
+  title: optionalText(200),
+  body: z.string().max(50_000).default(""),
+  tags: z
+    .string()
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
+});
+export type NoteInput = z.infer<typeof noteSchema>;
+
+// ─── Journal ─────────────────────────────────────────────────────────────
+
+export const journalSchema = z.object({
+  date: isoDate,
+  body: z.string().max(50_000).default(""),
+  mood: z
+    .string()
+    .optional()
+    .refine((v) => v === undefined || v === "" || /^[1-5]$/.test(v), { message: "Invalid mood" }),
+});
+export type JournalInput = z.infer<typeof journalSchema>;
