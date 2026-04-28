@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowDownRight, BarChart3, FileBarChart, TrendingUp } from "lucide-react";
+import { ArrowDownRight, BarChart3, FileBarChart, Scale, TrendingUp } from "lucide-react";
 import { Card } from "@/components/ui/Card";
 import { PageHeader } from "@/components/ui/PageHeader";
 
@@ -10,6 +10,13 @@ const REPORTS = [
     description: "Income vs expenses for any month, broken down by category.",
     gradient: "bg-gradient-to-br from-emerald-400 to-teal-600",
     icon: FileBarChart,
+  },
+  {
+    href: "/reports/balance-sheet",
+    title: "Balance Sheet",
+    description: "Assets, liabilities, and net worth across all your accounts.",
+    gradient: "bg-gradient-to-br from-sky-400 to-indigo-600",
+    icon: Scale,
   },
   {
     href: "/reports/spending",
@@ -59,6 +66,7 @@ export default function ReportsPage() {
               <p className="mt-1 text-sm text-slate-500">
                 Net Worth Over Time, Budget Progress, Habit Completion. Soon.
               </p>
+              <p className="mt-2 text-xs text-slate-400">Tip: every report has a CSV export.</p>
             </div>
           </div>
         </Card>
