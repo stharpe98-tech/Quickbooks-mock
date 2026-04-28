@@ -142,3 +142,31 @@ export const journalSchema = z.object({
     .refine((v) => v === undefined || v === "" || /^[1-5]$/.test(v), { message: "Invalid mood" }),
 });
 export type JournalInput = z.infer<typeof journalSchema>;
+
+// ─── Recurring ───────────────────────────────────────────────────────────
+
+export const recurringSchema = z.object({
+  name: z.string().trim().min(1, "Name required").max(120),
+  kind: z.enum(["income", "expense"]),
+  amount: moneyString,
+  category_id: optionalUuid,
+  account_id: optionalUuid,
+  frequency: z.enum(["weekly", "monthly", "yearly"]),
+  day_of_month: z
+    .string()
+    .optional()
+    .or(z.literal("").transform(() => undefined))
+    .refine((v) => v === undefined || /^([1-9]|[12][0-9]|3[01])$/.test(v), {
+      message: "Day of month 1-31",
+    }),
+  day_of_week: z
+    .string()
+    .optional()
+    .or(z.literal("").transform(() => undefined))
+    .refine((v) => v === undefined || /^[0-6]$/.test(v), {
+      message: "Day of week 0-6",
+    }),
+  start_date: isoDate,
+  notes: optionalText(500),
+});
+export type RecurringInput = z.infer<typeof recurringSchema>;
