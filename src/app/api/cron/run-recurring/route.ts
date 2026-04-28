@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { runDueRecurring } from "@/lib/db/recurring";
 import { syncAllPlaidItems } from "@/lib/db/plaid";
+import { syncAllTellerEnrollments } from "@/lib/db/teller";
 import { getAnyAppSettings } from "@/lib/db/settings";
 
 export const runtime = "nodejs";
@@ -28,10 +29,12 @@ export async function GET(request: NextRequest) {
   try {
     const recurring = await runDueRecurring();
     const plaid = await syncAllPlaidItems();
+    const teller = await syncAllTellerEnrollments();
     return NextResponse.json({
       ok: true,
       recurring,
       plaid,
+      teller,
     });
   } catch (e) {
     return NextResponse.json({ ok: false, error: (e as Error).message }, { status: 500 });
